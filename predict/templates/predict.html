@@ -1,0 +1,634 @@
+{% extends "./home.html" %}
+{% load static %}
+
+{% block meta %}
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+{% endblock meta %}
+
+{% block title %}
+<title>Predict</title>
+{% endblock title %}
+
+{% block body %}
+<body class="u-body u-hide-footer u-xl-mode" data-style="blank" data-posts="" data-global-section-properties="{&quot;colorings&quot;:{&quot;light&quot;:[&quot;clean&quot;],&quot;colored&quot;:[&quot;clean&quot;],&quot;dark&quot;:[&quot;dark&quot;]}}" data-source="" data-lang="en" data-page-sections-style="[{&quot;name&quot;:&quot;blank&quot;}]" data-page-coloring-types="{&quot;light&quot;:[&quot;clean&quot;],&quot;colored&quot;:[&quot;clean&quot;],&quot;dark&quot;:[&quot;dark&quot;]}" data-page-category="&quot;Basic&quot;">
+    <section class="u-carousel u-slide u-block-7475-1" custom-posts-hash="[]" data-style="blank" data-section-properties="{&quot;margin&quot;:&quot;none&quot;,&quot;stretch&quot;:true}" id="carousel-24b2" data-source="Blank" data-id="7475" data-interval="5000" data-u-ride="carousel">
+          <ol class="u-absolute-hcenter u-carousel-indicators u-block-7475-2">
+            
+          <li data-u-target="#carousel-24b2" class="u-active u-grey-30" data-u-slide-to="0"></li><li data-u-target="#carousel-24b2" class="u-grey-30" data-u-slide-to="1"></li><li data-u-target="#carousel-24b2" class="u-grey-30" data-u-slide-to="2"></li></ol>
+          <div class="u-carousel-inner" role="listbox">
+          <div class="u-active u-carousel-item u-clearfix u-image u-block-cae4-1" custom-posts-hash="[I,T]" data-section-properties="{&quot;margin&quot;:&quot;none&quot;,&quot;stretch&quot;:true}" data-id="cae4" data-post-id="1801794234" data-posts-content="[{'images':[[1240,800]],'maps':[],'videos':[],'icons':[],'textWidth':800,'textHeight':450,'id':1,'headingProp':'title','textProp':'largeText'}]" data-section-content="{'images':[{'w':1240,'h':800}],'headings':[{'repeater':false,'length':24,'cellsCount':1}],'texts':[{'repeater':false,'length':96,'cellsCount':1}],'tables':[],'customLists':[],'accordions':[],'textGroupCount':1,'textLength':112}" data-style="intro-center-rect-1-2" data-source="Sketch" data-image-width="800" data-image-height="600"><div class="u-clearfix u-sheet u-block-cae4-2">
+        
+      <h1 class="u-align-center u-text u-title u-block-cae4-5">Emotions Games​</h1>
+      <form id="GameForm" method="POST" action="{% url 'run_detection' %}">
+        {% csrf_token %}
+      <button type="submit" name="Emotion_flashcard_game_buuton" class="u-active-palette-1-base u-align-center u-black u-border-none u-btn u-btn-round u-button-style u-hover-palette-1-base u-radius u-block-cae4-7">Start!</button></div>
+      
+      <style data-mode="XL" data-visited="true">
+        @media (min-width: 1200px) {
+      .u-block-cae4-1 {
+        background-image: url("/static/predict/images/one.gif");
+        background-position: 50% 50%;
+      }
+      .u-block-cae4-2 {
+        min-height: 703px;
+      }
+      .u-block-cae4-5 {
+        font-weight: 700;
+        margin-top: 41px;
+        margin-right: 102px;
+        margin-bottom: 0;
+        margin-left: 40px;
+      }
+      .u-block-cae4-7 {
+        --radius: 25px;
+        background-image: none;
+        margin-top: 453px;
+        margin-left: auto;
+        margin-right: auto;
+        margin-bottom: 45px;
+        padding-top: 16px;
+        padding-right: 56px;
+        padding-bottom: 17px;
+        padding-left: 56px;
+      }
+    }</style><style data-mode="LG" data-visited="true">@media (max-width: 1199px) and (min-width: 992px) {
+      .u-block-cae4-1 {
+        background-image: url("/static/predict/images/one.gif");
+        background-position: 50% 50%;
+      }
+      .u-block-cae4-2 {
+        min-height: 677px;
+      }
+      .u-block-cae4-5 {
+        font-weight: 700;
+        margin-top: 41px;
+        margin-right: 0;
+        margin-bottom: 0;
+        margin-left: 0;
+      }
+      .u-block-cae4-7 {
+        background-image: none;
+        --radius: 25px;
+        margin-top: 460px;
+        margin-left: auto;
+        margin-right: auto;
+        margin-bottom: 38px;
+        padding-top: 16px;
+        padding-right: 54px;
+        padding-bottom: 17px;
+        padding-left: 53px;
+      }
+    }</style><style data-mode="MD" data-visited="true">@media (max-width: 991px) and (min-width: 768px) {
+      .u-block-cae4-1 {
+        background-image: url("/static/predict/images/one.gif");
+        background-position: 50% 50%;
+      }
+      .u-block-cae4-2 {
+        min-height: 677px;
+      }
+      .u-block-cae4-5 {
+        font-weight: 700;
+        margin-top: 41px;
+        margin-right: 0;
+        margin-bottom: 0;
+        margin-left: 0;
+      }
+      .u-block-cae4-7 {
+        background-image: none;
+        --radius: 25px;
+        margin-top: 463px;
+        margin-left: auto;
+        margin-right: auto;
+        margin-bottom: 38px;
+        padding-top: 15px;
+        padding-right: 56px;
+        padding-bottom: 16px;
+        padding-left: 54px;
+      }
+    }</style><style data-mode="SM">@media (max-width: 767px) and (min-width: 576px) {
+      .u-block-cae4-1 {
+        background-image: url("/static/predict/images/one.gif");
+        background-position: 50% 50%;
+      }
+      .u-block-cae4-2 {
+        min-height: 508px;
+      }
+      .u-block-cae4-5 {
+        font-weight: 700;
+        margin-top: 41px;
+        margin-right: 0;
+        margin-bottom: 0;
+        margin-left: 0;
+      }
+      .u-block-cae4-7 {
+        background-image: none;
+        --radius: 25px;
+        margin-top: 463px;
+        margin-right: auto;
+        margin-bottom: 38px;
+        margin-left: auto;
+        padding-top: 15px;
+        padding-right: 56px;
+        padding-bottom: 16px;
+        padding-left: 54px;
+      }
+    }</style><style data-mode="XS">@media (max-width: 575px) {
+      .u-block-cae4-1 {
+        background-image: url("/static/predict/images/one.gif");
+        background-position: 50% 50%;
+      }
+      .u-block-cae4-2 {
+        min-height: 320px;
+      }
+      .u-block-cae4-5 {
+        font-weight: 700;
+        margin-top: 41px;
+        margin-right: 0;
+        margin-bottom: 0;
+        margin-left: 0;
+      }
+      .u-block-cae4-7 {
+        background-image: none;
+        --radius: 25px;
+        margin-top: 463px;
+        margin-right: auto;
+        margin-bottom: 38px;
+        margin-left: auto;
+        padding-top: 15px;
+        padding-right: 56px;
+        padding-bottom: 16px;
+        padding-left: 54px;
+      }
+    }</style></div><div class="skrollable skrollable-between u-align-left u-carousel-item u-clearfix u-white u-block-de77-50" custom-posts-hash="[I,T]" src="" data-style="popular-intro" data-post-id="2253142892" data-section-properties="{&quot;margin&quot;:&quot;none&quot;,&quot;stretch&quot;:true}" data-source="functional_fix" data-id="de77">
+      <div class="u-clearfix u-sheet u-block-de77-42">
+        <h1 class="u-custom-font u-font-montserrat u-text u-text-palette-1-base u-block-de77-38">Autism Emotion Recognition</h1>
+        <img class="custom-expanded u-image u-block-de77-48" src="{% static "predict/images/tenor.gif" %}" data-image-width="300" data-image-height="300">
+        <p class="u-large-text u-text u-text-black u-text-variant u-block-de77-39">Autism Support System: Empowering individuals with autism through advanced emotion and gesture recognition technology.<br><br></p>
+        <div class="button-container">
+          <form id="AutismForm" method="POST" action="{% url 'run_detection' %}">
+            {% csrf_token %}
+          <button type="submit" name="autism_emotion_recognition_button" class="u-border-2 u-border-hover-palette-1-base u-border-palette-1-base u-btn u-btn-round u-button-style u-hover-palette-1-base u-none u-radius u-block-de77-51">Start</button>
+        </div>
+      </div>
+      <style data-mode="XL" data-visited="true">
+        /* Base styles */
+        .u-block-de77-42 {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          padding: 20px;
+          text-align: center;
+        }
+    
+        .u-block-de77-48 {
+          margin: 20px 0; /* Add margin above and below the image */
+        }
+    
+        .button-container {
+          display: flex;
+          justify-content: center;
+          width: 100%;
+          margin-top: 20px; /* Added margin above the button */
+        }
+    
+        /* Responsive adjustments */
+        @media (min-width: 1200px) {
+          .u-block-de77-42 {
+            min-height: 664px;
+          }
+          .u-block-de77-48 {
+            width: 510px;
+            height: 704px;
+          }
+          .u-block-de77-38 {
+            font-size: 8rem; /* Increased font size */
+            font-weight: 700;
+            margin-top: 20px;
+            margin-bottom: 20px;
+          }
+          .u-block-de77-39 {
+            font-size: 1.25rem;
+            line-height: 1.8;
+          }
+          .u-block-de77-51 {
+            --radius: 50px;
+            border-style: solid;
+            font-weight: 700;
+            text-transform: uppercase;
+            font-size: 1rem;
+            letter-spacing: 1px;
+          }
+        }
+    
+        @media (max-width: 1199px) and (min-width: 992px) {
+          .u-block-de77-42 {
+            min-height: 626px;
+          }
+          .u-block-de77-48 {
+            width: 441px;
+            height: 588px;
+          }
+          .u-block-de77-38 {
+            font-size: 7rem; /* Increased font size */
+            font-weight: 700;
+          }
+          .u-block-de77-39 {
+            font-size: 1.25rem;
+            line-height: 1.8;
+          }
+          .u-block-de77-51 {
+            --radius: 50px;
+            border-style: solid;
+            font-weight: 700;
+            text-transform: uppercase;
+            font-size: 0.875rem;
+            letter-spacing: 1px;
+          }
+        }
+    
+        @media (max-width: 991px) and (min-width: 768px) {
+          .u-block-de77-42 {
+            min-height: 515px;
+          }
+          .u-block-de77-48 {
+            width: 429px;
+            height: 499px;
+          }
+          .u-block-de77-38 {
+            font-size: 6rem; /* Increased font size */
+            font-weight: 700;
+          }
+          .u-block-de77-39 {
+            font-size: 1.25rem;
+            line-height: 1.8;
+          }
+          .u-block-de77-51 {
+            --radius: 50px;
+            border-style: solid;
+            font-weight: 700;
+            text-transform: uppercase;
+            font-size: 0.875rem;
+            letter-spacing: 1px;
+          }
+        }
+    
+        @media (max-width: 767px) and (min-width: 576px) {
+          .u-block-de77-42 {
+            min-height: 626px;
+          }
+          .u-block-de77-48 {
+            width: 479px;
+            height: 574px;
+          }
+          .u-block-de77-38 {
+            font-size: 5rem; /* Increased font size */
+            font-weight: 700;
+          }
+          .u-block-de77-39 {
+            font-size: 1.25rem;
+            line-height: 1.8;
+          }
+          .u-block-de77-51 {
+            --radius: 50px;
+            border-style: solid;
+            font-weight: 700;
+            text-transform: uppercase;
+            font-size: 0.875rem;
+            letter-spacing: 1px;
+          }
+        }
+    
+        @media (max-width: 575px) {
+          .u-block-de77-42 {
+            min-height: 491px;
+            flex-direction: column;
+            align-items: center;
+          }
+          .u-block-de77-48 {
+            height: 407px;
+            width: 322px;
+            margin: 20px 0;
+          }
+          .u-block-de77-38 {
+            font-size: 4rem; /* Increased font size */
+            font-weight: 700;
+          }
+          .u-block-de77-39 {
+            font-size: 1.25rem;
+            line-height: 1.8;
+          }
+          .u-block-de77-51 {
+            --radius: 50px;
+            border-style: solid;
+            font-weight: 700;
+            text-transform: uppercase;
+            font-size: 0.875rem;
+            letter-spacing: 1px;
+          }
+        }
+      </style>
+    </div>
+    
+    
+    
+    <div class="u-align-center u-black u-carousel-item u-clearfix u-block-9fc0-1" custom-posts-hash="[I,T]" data-section-properties="{&quot;margin&quot;:&quot;none&quot;,&quot;stretch&quot;:true}" data-id="9fc0" data-post-id="post3" data-posts-content="[{'images':[[400,400]],'maps':[],'videos':[],'icons':[],'textWidth':1388,'textHeight':802,'id':1,'headingProp':'title','textProp':'largeText'}]" data-section-content="{'images':[{'w':400,'h':400}],'headings':[{'repeater':false,'length':16,'cellsCount':1}],'texts':[{'repeater':false,'length':186,'cellsCount':1}],'tables':[],'customLists':[],'accordions':[],'textGroupCount':1,'textLength':112}" data-style="intro-circle-image" data-source="Sketch"><div class="u-clearfix u-sheet u-block-9fc0-2">
+        
+        
+        
+      <div alt="" class="u-align-left u-image u-image-circle u-block-9fc0-3" data-brightness="" src="" data-image-width="800" data-image-height="600"></div><h1 class="u-align-center u-heading-font u-text u-title u-block-9fc0-6">EmoHand Gesture</h1><form id="detectionForm" method="POST2" action="{% url 'run_detection' %}">
+        {% csrf_token %}
+        <button type="submit" name="emotion_and_gesture_button" class="u-active-palette-1-base u-border-none u-btn u-btn-round u-button-style u-hover-palette-1-light-1 u-palette-3-light-1 u-radius u-text-body-alt-color u-text-hover-white u-block-9fc0-7">
+          Start Detection
+        </button></div><style data-mode="XL">
+        @media (min-width: 1200px) {
+      .u-block-9fc0-1 {
+        background-image: none;
+      }
+      .u-block-9fc0-2 {
+        min-height: 678px;
+      }
+      .u-block-9fc0-3 {
+        width: 460px;
+        height: 460px;
+        background-image: url("/static/predict/images/games.gif");
+        background-position: 50% 50%;
+        margin-top: 29px;
+        margin-left: auto;
+        margin-right: auto;
+        margin-bottom: 0;
+      }
+      .u-block-9fc0-6 {
+        font-size: 4.5rem;
+        width: 710px;
+        margin-top: 29px;
+        margin-left: auto;
+        margin-right: auto;
+        margin-bottom: 0;
+      }
+      .u-block-9fc0-7 {
+        --radius: 50px;
+        font-weight: 700;
+        text-transform: uppercase;
+        font-size: 0.875rem;
+        letter-spacing: 1px;
+        background-image: none;
+        margin-top: 37px;
+        margin-left: auto;
+        margin-right: auto;
+        margin-bottom: 60px;
+        padding-top: 19px;
+        padding-right: 43px;
+        padding-bottom: 21px;
+        padding-left: 41px;
+      }
+    }</style><style data-mode="LG" data-visited="true">@media (max-width: 1199px) and (min-width: 992px) {
+      .u-block-9fc0-1 {
+        background-image: none;
+      }
+      .u-block-9fc0-2 {
+        min-height: 588px;
+      }
+      .u-block-9fc0-3 {
+        background-image: url("/static/predict/images/games.gif");
+        width: 460px;
+        height: 460px;
+        background-position: 50% 50%;
+        margin-top: 29px;
+        margin-left: auto;
+        margin-right: auto;
+        margin-bottom: 0;
+      }
+      .u-block-9fc0-6 {
+        margin-top: 29px;
+        margin-left: auto;
+        margin-right: auto;
+        margin-bottom: 0;
+        font-size: 4.5rem;
+        width: 710px;
+      }
+      .u-block-9fc0-7 {
+        background-image: none;
+        --radius: 50px;
+        font-weight: 700;
+        text-transform: uppercase;
+        font-size: 0.875rem;
+        letter-spacing: 1px;
+        margin-top: 37px;
+        margin-left: auto;
+        margin-right: auto;
+        margin-bottom: 60px;
+        padding-top: 19px;
+        padding-right: 43px;
+        padding-bottom: 21px;
+        padding-left: 41px;
+      }
+    }</style><style data-mode="MD" data-visited="true">@media (max-width: 991px) and (min-width: 768px) {
+      .u-block-9fc0-1 {
+        background-image: none;
+      }
+      .u-block-9fc0-2 {
+        min-height: 515px;
+      }
+      .u-block-9fc0-3 {
+        background-image: url("/static/predict/images/games.gif");
+        width: 460px;
+        height: 460px;
+        background-position: 50% 50%;
+        margin-top: 29px;
+        margin-left: auto;
+        margin-right: auto;
+        margin-bottom: 0;
+      }
+      .u-block-9fc0-6 {
+        margin-top: 29px;
+        margin-left: auto;
+        margin-right: auto;
+        margin-bottom: 0;
+        font-size: 4.5rem;
+        width: 710px;
+      }
+      .u-block-9fc0-7 {
+        background-image: none;
+        --radius: 50px;
+        font-weight: 700;
+        text-transform: uppercase;
+        font-size: 0.875rem;
+        letter-spacing: 1px;
+        margin-top: 37px;
+        margin-left: auto;
+        margin-right: auto;
+        margin-bottom: 60px;
+        padding-top: 19px;
+        padding-right: 43px;
+        padding-bottom: 21px;
+        padding-left: 41px;
+      }
+    }</style><style data-mode="SM">@media (max-width: 767px) and (min-width: 576px) {
+      .u-block-9fc0-1 {
+        background-image: none;
+      }
+      .u-block-9fc0-2 {
+        min-height: 515px;
+      }
+      .u-block-9fc0-3 {
+        background-image: url("/static/predict/images/games.gif");
+        width: 460px;
+        height: 460px;
+        background-position: 50% 50%;
+        margin-top: 29px;
+        margin-left: auto;
+        margin-right: auto;
+        margin-bottom: 0;
+      }
+      .u-block-9fc0-6 {
+        margin-top: 29px;
+        margin-left: auto;
+        margin-right: auto;
+        margin-bottom: 0;
+        font-size: 3.75rem;
+        width: 540px;
+      }
+      .u-block-9fc0-7 {
+        background-image: none;
+        --radius: 50px;
+        font-weight: 700;
+        text-transform: uppercase;
+        font-size: 0.875rem;
+        letter-spacing: 1px;
+        margin-top: 37px;
+        margin-left: auto;
+        margin-right: auto;
+        margin-bottom: 60px;
+        padding-top: 19px;
+        padding-right: 43px;
+        padding-bottom: 21px;
+        padding-left: 41px;
+      }
+    }</style><style data-mode="XS">@media (max-width: 575px) {
+      .u-block-9fc0-1 {
+        background-image: none;
+      }
+      .u-block-9fc0-2 {
+        min-height: 395px;
+      }
+      .u-block-9fc0-3 {
+        background-image: url("/static/predict/images/games.gif");
+        width: 340px;
+        height: 340px;
+        background-position: 50% 50%;
+        margin-top: 29px;
+        margin-left: auto;
+        margin-right: auto;
+        margin-bottom: 0;
+      }
+      .u-block-9fc0-6 {
+        margin-top: 29px;
+        margin-left: auto;
+        margin-right: auto;
+        margin-bottom: 0;
+        font-size: 3rem;
+        width: 340px;
+      }
+      .u-block-9fc0-7 {
+        background-image: none;
+        --radius: 50px;
+        font-weight: 700;
+        text-transform: uppercase;
+        font-size: 0.875rem;
+        letter-spacing: 1px;
+        margin-top: 37px;
+        margin-left: auto;
+        margin-right: auto;
+        margin-bottom: 60px;
+        padding-top: 19px;
+        padding-right: 43px;
+        padding-bottom: 21px;
+        padding-left: 41px;
+      }
+    }</style></div></div>
+          <a class="u-absolute-vcenter u-carousel-control u-carousel-control-prev u-text-grey-30 u-block-7475-3" href="#carousel-24b2" role="button" data-u-slide="prev">
+            <span aria-hidden="true">
+                <svg class="u-svg-link" viewBox="0 0 477.175 477.175">
+                    <path d="M145.188,238.575l215.5-215.5c5.3-5.3,5.3-13.8,0-19.1s-13.8-5.3-19.1,0l-225.1,225.1c-5.3,5.3-5.3,13.8,0,19.1l225.1,225
+                        c2.6,2.6,6.1,4,9.5,4s6.9-1.3,9.5-4c5.3-5.3,5.3-13.8,0-19.1L145.188,238.575z"></path>
+                </svg>
+            </span>
+            <span class="sr-only">Previous</span>
+          </a>
+          <a class="u-absolute-vcenter u-carousel-control u-carousel-control-next u-text-grey-30 u-block-7475-4" href="#carousel-24b2" role="button" data-u-slide="next">
+            <span aria-hidden="true">
+                <svg class="u-svg-link" viewBox="0 0 477.175 477.175">
+                    <path d="M360.731,229.075l-225.1-225.1c-5.3-5.3-13.8-5.3-19.1,0s-5.3,13.8,0,19.1l215.5,215.5l-215.5,215.5
+                        c-5.3,5.3-5.3,13.8,0,19.1c2.6,2.6,6.1,4,9.5,4c3.4,0,6.9-1.3,9.5-4l225.1-225.1C365.931,242.875,365.931,234.275,360.731,229.075z"></path>
+                </svg>
+            </span>
+            <span class="sr-only">Next</span>
+          </a>
+        <style data-mode="XL" data-visited="true">@media (min-width: 1200px) {
+      .u-block-7475-2 {
+        position: absolute;
+        bottom: 10px;
+      }
+      .u-block-7475-3 {
+        position: absolute;
+        left: 0;
+      }
+      .u-block-7475-4 {
+        position: absolute;
+        right: 0;
+      }
+    }</style><style data-mode="LG" data-visited="true">@media (max-width: 1199px) and (min-width: 992px) {
+      .u-block-7475-2 {
+        position: absolute;
+        bottom: 10px;
+      }
+      .u-block-7475-3 {
+        position: absolute;
+        left: 0;
+      }
+      .u-block-7475-4 {
+        position: absolute;
+        right: 0;
+      }
+    }</style><style data-mode="MD" data-visited="true">@media (max-width: 991px) and (min-width: 768px) {
+      .u-block-7475-2 {
+        position: absolute;
+        bottom: 10px;
+      }
+      .u-block-7475-3 {
+        position: absolute;
+        left: 0;
+      }
+      .u-block-7475-4 {
+        position: absolute;
+        right: 0;
+      }
+    }</style><style data-mode="SM">@media (max-width: 767px) and (min-width: 576px) {
+      .u-block-7475-2 {
+        position: absolute;
+        bottom: 10px;
+      }
+      .u-block-7475-3 {
+        position: absolute;
+        left: 0;
+      }
+      .u-block-7475-4 {
+        position: absolute;
+        right: 0;
+      }
+    }</style><style data-mode="XS">@media (max-width: 575px) {
+      .u-block-7475-2 {
+        position: absolute;
+        bottom: 10px;
+      }
+      .u-block-7475-3 {
+        position: absolute;
+        left: 0;
+      }
+      .u-block-7475-4 {
+        position: absolute;
+        right: 0;
+      }
+    }</style></section>
+    </body>
+{% endblock body %}

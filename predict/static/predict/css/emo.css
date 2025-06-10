@@ -1,0 +1,343 @@
+/* For screens with minimum width of 1200px */
+@media (min-width: 1200px) {
+  .u-block-cae4-1 {
+    background-image: url("../images/emotional-rollercoaster.gif");
+    background-position: 50% 50%;
+  }
+  .u-block-cae4-2 {
+    min-height: 703px;
+  }
+  .u-block-cae4-5 {
+    font-weight: 700;
+    margin-top: 41px;
+    margin-right: 102px;
+    margin-bottom: 0;
+    margin-left: 40px;
+  }
+  .u-block-cae4-7 {
+    --radius: 25px;
+    background-image: none;
+    margin-top: 453px;
+    margin-left: auto;
+    margin-right: auto;
+    margin-bottom: 45px;
+    padding-top: 16px;
+    padding-right: 56px;
+    padding-bottom: 17px;
+    padding-left: 56px;
+  }
+  .u-block-de77-42 {
+    min-height: 678px;
+  }
+  .u-block-de77-48 {
+    width: 510px;
+    height: 704px;
+    margin-top: -38px;
+    margin-right: 0;
+    margin-bottom: 0;
+    margin-left: auto;
+  }
+  .u-block-de77-38 {
+    font-size: 6rem;
+    font-weight: 700;
+    margin-top: -555px;
+    margin-right: 503px;
+    margin-bottom: 0;
+    margin-left: 13px;
+  }
+  .u-block-de77-39 {
+    font-size: 1.25rem;
+    line-height: 1.8;
+    margin-top: 32px;
+    margin-right: 607px;
+    margin-bottom: 0;
+    margin-left: 24px;
+  }
+  .u-block-de77-51 {
+    --radius: 50px;
+    border-style: solid;
+    font-weight: 700;
+    text-transform: uppercase;
+    font-size: 1rem;
+    letter-spacing: 1px;
+    margin-top: 0;
+    margin-right: auto;
+    margin-bottom: 0;
+    margin-left: 64px;
+  }
+  .u-block-9fc0-2 {
+    min-height: 678px;
+  }
+  .u-block-9fc0-3 {
+    width: 460px;
+    height: 460px;
+    background-image: url("../images/games.gif");
+    background-position: 50% 50%;
+    margin-top: 29px;
+    margin-left: auto;
+    margin-right: auto;
+    margin-bottom: 0;
+  }
+  .u-block-9fc0-6 {
+    font-size: 4.5rem;
+    width: 710px;
+    margin-top: 29px;
+    margin-left: auto;
+    margin-right: auto;
+    margin-bottom: 0;
+  }
+  .u-block-9fc0-7 {
+    --radius: 50px;
+    font-weight: 700;
+    text-transform: uppercase;
+    font-size: 0.875rem;
+    letter-spacing: 1px;
+    background-image: none;
+    margin-top: 37px;
+    margin-left: auto;
+    margin-right: auto;
+    margin-bottom: 60px;
+    padding-top: 19px;
+    padding-right: 43px;
+    padding-bottom: 21px;
+    padding-left: 41px;
+  }
+  .u-block-7475-2 {
+    position: absolute;
+    bottom: 10px;
+  }
+  .u-block-7475-3 {
+    position: absolute;
+    left: 0;
+  }
+  .u-block-7475-4 {
+    position: absolute;
+    right: 0;
+  }
+}
+
+/* For screens between 992px and 1199px */
+@media (max-width: 1199px) and (min-width: 992px) {
+  .u-block-cae4-1,
+  .u-block-de77-42,
+  .u-block-9fc0-2 {
+    min-height: 588px;
+  }
+  .u-block-cae4-5,
+  .u-block-9fc0-6,
+  .u-block-9fc0-7 {
+    margin-right: 0;
+    margin-left: auto;
+  }
+  .u-block-cae4-7,
+  .u-block-de77-51,
+  .u-block-9fc0-7 {
+    margin-top: 460px;
+  }
+  .u-block-de77-48 {
+    width: 441px;
+    height: 616px;
+    margin-top: -48px;
+  }
+  .u-block-de77-38 {
+    font-size: 4.5rem;
+    width: auto;
+    margin-top: -504px;
+  }
+  .u-block-de77-39 {
+    font-size: 1.25rem;
+    width: auto;
+    margin-top: 40px;
+  }
+  .u-block-de77-51 {
+    font-size: 0.875rem;
+    margin-top: 0;
+    margin-bottom: 0;
+    margin-left: 64px;
+  }
+  .u-block-9fc0-3 {
+    width: 460px;
+    height: 460px;
+  }
+  .u-block-9fc0-6 {
+    font-size: 4.5rem;
+    width: 710px;
+  }
+  .u-block-9fc0-7 {
+    font-size: 0.875rem;
+    margin-top: 37px;
+    margin-bottom: 60px;
+    padding-right: 43px;
+    padding-left: 41px;
+  }
+}
+
+/* For screens between 768px and 991px */
+@media (max-width: 991px) and (min-width: 768px) {
+  .u-block-cae4-1,
+  .u-block-de77-42,
+  .u-block-9fc0-2 {
+    min-height: 515px;
+  }
+  .u-block-cae4-5,
+  .u-block-9fc0-6,
+  .u-block-9fc0-7 {
+    margin-right: 0;
+    margin-left: auto;
+  }
+  .u-block-cae4-7,
+  .u-block-de77-51,
+  .u-block-9fc0-7 {
+    margin-top: 463px;
+  }
+  .u-block-de77-48 {
+    width: 429px;
+    height: 499px;
+    margin-top: -12px;
+    margin-right: -12px;
+  }
+  .u-block-de77-38 {
+    font-size: 3rem;
+    width: auto;
+    margin-top: -456px;
+  }
+  .u-block-de77-39 {
+    font-size: 1.25rem;
+    width: auto;
+    margin-top: 44px;
+  }
+  .u-block-de77-51 {
+    font-size: 0.875rem;
+    margin-top: -9px;
+    margin-bottom: 29px;
+    margin-left: 52px;
+  }
+  .u-block-9fc0-3 {
+    width: 460px;
+    height: 460px;
+  }
+  .u-block-9fc0-6 {
+    font-size: 4.5rem;
+    width: 710px;
+  }
+  .u-block-9fc0-7 {
+    font-size: 0.875rem;
+    margin-top: 37px;
+    margin-bottom: 60px;
+    padding-right: 43px;
+    padding-left: 41px;
+  }
+}
+
+/* For screens between 576px and 767px */
+/* For screens between 576px and 767px */
+@media (max-width: 767px) and (min-width: 576px) {
+  .u-block-cae4-1,
+  .u-block-de77-42,
+  .u-block-9fc0-2 {
+    min-height: 588px;
+  }
+  .u-block-cae4-5,
+  .u-block-9fc0-6,
+  .u-block-9fc0-7 {
+    margin-right: 0;
+    margin-left: auto;
+  }
+  .u-block-cae4-7,
+  .u-block-de77-51,
+  .u-block-9fc0-7 {
+    margin-top: 628px;
+  }
+  .u-block-de77-48 {
+    width: 479px;
+    height: 574px;
+    margin-top: 628px;
+  }
+  .u-block-de77-38 {
+    font-size: 4.5rem;
+    width: auto;
+    margin-top: -1134px;
+    margin-right: 216px;
+  }
+  .u-block-de77-39 {
+    font-size: 1.25rem;
+    width: auto;
+    margin-top: 44px;
+  }
+  .u-block-de77-51 {
+    font-size: 0.875rem;
+    margin-top: -9px;
+    margin-bottom: 29px;
+  }
+  .u-block-9fc0-3 {
+    width: 460px;
+    height: 460px;
+  }
+  .u-block-9fc0-6 {
+    font-size: 4.5rem;
+    width: 710px;
+  }
+  .u-block-9fc0-7 {
+    font-size: 0.875rem;
+    margin-top: 37px;
+    margin-bottom: 60px;
+    padding-right: 43px;
+    padding-left: 41px;
+  }
+}
+
+/* For screens up to 575px */
+@media (max-width: 575px) {
+  .u-block-cae4-1,
+  .u-block-de77-42,
+  .u-block-9fc0-2 {
+    min-height: 441px;
+  }
+  .u-block-cae4-5,
+  .u-block-9fc0-6,
+  .u-block-9fc0-7 {
+    margin-right: 0;
+    margin-left: auto;
+  }
+  .u-block-cae4-7,
+  .u-block-de77-51,
+  .u-block-9fc0-7 {
+    margin-top: 460px;
+  }
+  .u-block-de77-48 {
+    width: 324px;
+    height: 404px;
+    margin-top: 460px;
+  }
+  .u-block-de77-38 {
+    font-size: 3rem;
+    width: auto;
+    margin-top: -818px;
+    margin-right: 160px;
+  }
+  .u-block-de77-39 {
+    font-size: 1.25rem;
+    width: auto;
+    margin-top: 32px;
+  }
+  .u-block-de77-51 {
+    font-size: 0.875rem;
+    margin-top: 0;
+    margin-bottom: 24px;
+  }
+  .u-block-9fc0-3 {
+    width: 300px;
+    height: 300px;
+  }
+  .u-block-9fc0-6 {
+    font-size: 3rem;
+    width: 510px;
+  }
+  .u-block-9fc0-7 {
+    font-size: 0.875rem;
+    margin-top: 24px;
+    margin-bottom: 40px;
+    padding-right: 34px;
+    padding-left: 32px;
+  }
+}
