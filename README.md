@@ -1,7 +1,7 @@
-# 🌟 Web-EmoRec
+# 🌟 Autism Support System
 
 ## 🚀 Overview
-**Web-EmoRec** is a web-based emotion recognition system that uses advanced machine learning techniques to analyze and classify human emotions. This project aims to enhance communication and emotional awareness through real-time emotion detection and feedback.
+**Autism-Support-System** is a web-based emotion recognition system that uses advanced machine learning techniques to analyze and classify human emotions. This project aims to enhance communication and emotional awareness through real-time emotion detection and feedback.
 
 ---
 
@@ -81,8 +81,8 @@ This project is licensed under the [Apache 2.0 License](LICENSE).
 ---
 
 ## 📧 Contact
-**Mohammed**  
-- 🌐 GitHub: [Im-Mohammed](https://github.com/Im-Mohammed)  
+**Muqtadir27**  
+- 🌐 GitHub: [Muqtadir27](https://github.com/Muqtadir27)  
 
 ---
 
