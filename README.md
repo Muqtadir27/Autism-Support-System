@@ -1,91 +1,129 @@
-# 🌟 Autism Support System
+# Autism Support System
 
-## 🚀 Overview
-**Autism-Support-System** is a web-based emotion recognition system that uses advanced machine learning techniques to analyze and classify human emotions. This project aims to enhance communication and emotional awareness through real-time emotion detection and feedback.
+An AI-powered emotion recognition system designed to assist individuals with autism through real-time facial and vocal emotion detection, analysis, and support.
 
----
+## Features
 
-## 🌟 Features
-- 🎭 **Emotion Detection**: Recognizes basic emotions such as happiness, sadness, anger, surprise, and more.
-- 📸 **Real-Time Analysis**: Utilizes a webcam for live emotion recognition.
-- 💡 **Interactive Interface**: User-friendly web interface for seamless interaction.
-- 📊 **Analytics Dashboard**: Visualize detected emotions over time.
+- **Visual Emotion Recognition**: Real-time facial emotion detection using computer vision
+- **Vocal Expression Interpretation**: Speech-to-text emotion analysis with supportive responses
+- **Emotional Log Analytics**: Data visualization and pattern recognition for personalized insights
+- **Futuristic AI Interface**: Modern, accessible design with glassmorphism and neon aesthetics
 
----
+## Tech Stack
 
-## 🛠️ Technology Stack
-- **Frontend**: HTML, CSS, JavaScript
-- **Backend**: Python, Django Framework
-- **Machine Learning**: TensorFlow, OpenCV
-- **Deployment**: [Platform details, e.g., AWS, Heroku, etc.]
+- **Backend**: Django 4.2.6
+- **Frontend**: HTML5, CSS3, JavaScript
+- **Machine Learning**: TensorFlow, OpenCV, SpeechRecognition
+- **Styling**: Custom CSS with glassmorphism effects
+- **Deployment**: Vercel, Heroku, or Railway with GitHub Actions CI/CD
 
----
+## CI/CD Deployment
 
-## 📂 Project Structure
-```plaintext
-.
-├── static/                 # Static assets (CSS, JS, images)
-├── templates/              # HTML templates
-├── models/                 # Pre-trained emotion recognition models
-├── app/                    # Django app files
-├── requirements.txt        # Dependencies
-└── README.md               # Project documentation
-```
-## 🖥️ How to Run the Project
-1. **Clone the Repository**:
+This project is configured for automatic deployment using GitHub Actions. When you push to the main branch, the following happens:
+
+1. Dependencies are installed
+2. Static files are collected
+3. The application is deployed to your chosen platform (Vercel, Heroku, or Railway)
+
+## Deployment Setup
+
+### Option 1: Vercel (Recommended)
+
+1. Fork this repository to your GitHub account
+2. Sign up at [Vercel](https://vercel.com)
+3. Import your forked repository
+4. Configure the following environment variables in Vercel dashboard:
+   - `DJANGO_SECRET_KEY`: Generate a new secret key
+   - `DEBUG`: False
+   - `EMAIL_HOST_USER`: Your email for notifications
+   - `EMAIL_HOST_PASSWORD`: Your email app password
+
+### Option 2: GitHub Actions + Vercel
+
+1. Fork this repository
+2. Connect to Vercel and get your project credentials
+3. Add these secrets to your GitHub repository:
+   - `VERCEL_TOKEN`: Your Vercel access token
+   - `VERCEL_ORG_ID`: Your Vercel organization ID
+   - `VERCEL_PROJECT_ID`: Your Vercel project ID
+   - `DJANGO_SECRET_KEY`: Django secret key
+   - `EMAIL_HOST_USER`: Email for notifications
+   - `EMAIL_HOST_PASSWORD`: Email app password
+
+### Option 3: Heroku
+
+1. Fork this repository
+2. Install Heroku CLI and login
+3. Create a new Heroku app
+4. Add buildpack: `heroku buildpacks:set heroku/python`
+5. Push the repository to Heroku
+
+### Option 4: Railway
+
+1. Fork this repository
+2. Install Railway CLI and login
+3. Link your project and deploy
+
+## Environment Variables
+
+Required environment variables for production:
+
+- `DJANGO_SECRET_KEY`: Secret key for Django (can use default for dev)
+- `DEBUG`: Set to `False` for production
+- `EMAIL_HOST_USER`: Email address for notifications
+- `EMAIL_HOST_PASSWORD`: App password for email
+- `EMAIL_HOST`: SMTP server (defaults to smtp.gmail.com)
+- `EMAIL_PORT`: SMTP port (defaults to 587)
+- `EMAIL_USE_TLS`: Whether to use TLS (defaults to True)
+
+## Local Development
+
+1. Clone the repository:
    ```bash
-   git clone https://github.com/Im-Mohammed/Web-EmoRec.git
+   git clone <repository-url>
+   cd Autism-Support-System
    ```
-2. **Navigate to the Project Directory**:
+
+2. Create virtual environment:
    ```bash
-   cd Web-EmoRec
+   python -m venv venv
+   source venv/bin/activate  # Linux/Mac
+   # or
+   venv\Scripts\activate  # Windows
    ```
-3. **Install Dependencies**:
+
+3. Install dependencies:
    ```bash
    pip install -r requirements.txt
    ```
-4. **Run the Django Development Server**:
+
+4. Run migrations:
+   ```bash
+   python manage.py migrate
+   ```
+
+5. Start the development server:
    ```bash
    python manage.py runserver
    ```
-5. **Access the Application**:
-   Open your browser and go to `http://127.0.0.1:8000`.
 
----
+6. Visit `http://127.0.0.1:8000/`
 
-## 🤝 Contributing
-Contributions are welcome! Follow these steps to contribute:
-1. Fork the repository.
-2. Create a new branch:
-   ```bash
-   git checkout -b feature/YourFeatureName
-   ```
-3. Commit your changes:
-   ```bash
-   git commit -m "Add your message here"
-   ```
-4. Push to the branch:
-   ```bash
-   git push origin feature/YourFeatureName
-   ```
-5. Open a pull request.
+## Usage
 
----
-## 📊 Demo
+- **VISUAL_EMO**: Click "INITIALIZE SCAN" to start facial emotion recognition
+- **VOCAL_INT**: Click "ACTIVATE COMMS" and then the microphone icon to start voice emotion analysis
+- **LOG_ANALYTICS**: View emotion analytics and download logs
 
-https://github.com/user-attachments/assets/738075e0-8aed-4038-b361-53df8322f960
+## Contributing
 
-## 📜 License
-This project is licensed under the [Apache 2.0 License](LICENSE).
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Make your changes
+4. Commit your changes (`git commit -m 'Add some amazing feature'`)
+5. Push to the branch (`git push origin feature/amazing-feature`)
+6. Open a Pull Request
 
----
+## License
 
-## 📧 Contact
-**Muqtadir27**  
-- 🌐 GitHub: [Muqtadir27](https://github.com/Muqtadir27)  
-
----
-
-## ❤️ Acknowledgments
-- Inspiration: The need for enhanced emotional awareness and communication.
-- Tools: TensorFlow, OpenCV, Django, HTML, CSS, and JavaScript.
+This project is licensed under the MIT License - see the LICENSE file for details.

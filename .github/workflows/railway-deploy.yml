@@ -1,0 +1,35 @@
+name: Deploy to Railway
+
+on:
+  push:
+    branches: [ main, master ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18'
+        
+    - name: Install Railway CLI
+      run: npm install -g @railway/cli
+      
+    - name: Login to Railway
+      run: railway login
+      env:
+        RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+        
+    - name: Deploy to Railway
+      run: |
+        railway init
+        railway up
+      env:
+        RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+        DJANGO_SECRET_KEY: ${{ secrets.DJANGO_SECRET_KEY }}
+        EMAIL_HOST_USER: ${{ secrets.EMAIL_HOST_USER }}
+        EMAIL_HOST_PASSWORD: ${{ secrets.EMAIL_HOST_PASSWORD }}
