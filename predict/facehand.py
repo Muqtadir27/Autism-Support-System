@@ -61,6 +61,9 @@ def emotion_and_gesture_detection():
         return False
 
     # Initialize components
+    import os
+    BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    
     face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
     mp_hands = mp.solutions.hands
     hands = mp_hands.Hands(max_num_hands=1, min_detection_confidence=0.5, min_tracking_confidence=0.5)
@@ -68,13 +71,14 @@ def emotion_and_gesture_detection():
     pygame.mixer.init()
 
     # Load audio files
-    angry_song = 'C:/Users/moham/OneDrive/Desktop/Emorec/mini/predict/static/predict/musics/angry.mp3'
-    disgust_song = 'C:/Users/moham/OneDrive/Desktop/Emorec/mini/predict/static/predict/musics/disgust.mp3'
-    fear_song = 'C:/Users/moham/OneDrive/Desktop/Emorec/mini/predict/static/predict/musics/fear.mp3'
-    happy_song = 'C:/Users/moham/OneDrive/Desktop/Emorec/mini/predict/static/predict/musics/happy.mp3'
-    sad_song = 'C:/Users/moham/OneDrive/Desktop/Emorec/mini/predict/static/predict/musics/sad.mp3'
-    surprise_song = 'C:/Users/moham/OneDrive/Desktop/Emorec/mini/predict/static/predict/musics/suprise.mp3'
-    neutral_song = 'C:/Users/moham/OneDrive/Desktop/Emorec/mini/predict/static/predict/musics/neutral.mp3'
+    music_dir = os.path.join(BASE_DIR, 'predict', 'static', 'predict', 'musics')
+    angry_song = os.path.join(music_dir, 'angry.mp3')
+    disgust_song = os.path.join(music_dir, 'disgust.mp3')
+    fear_song = os.path.join(music_dir, 'fear.mp3')
+    happy_song = os.path.join(music_dir, 'happy.mp3')
+    sad_song = os.path.join(music_dir, 'sad.mp3')
+    surprise_song = os.path.join(music_dir, 'suprise.mp3')
+    neutral_song = os.path.join(music_dir, 'neutral.mp3')
 
     # Start capturing video
     cap = cv2.VideoCapture(0)
@@ -179,12 +183,16 @@ def emotion_and_gesture_detection():
         # Display the video frame
         cv2.imshow('Emotion and Hand Gesture Detection', frame)
 
-        # Exit on 'q' key press
-        if cv2.waitKey(1) & 0xFF == ord('q'):
+        # Exit on 'q' key press or if the window is closed
+        key = cv2.waitKey(1) & 0xFF
+        if key == ord('q') or cv2.getWindowProperty('Emotion and Hand Gesture Detection', cv2.WND_PROP_VISIBLE) < 1:
             break
 
     # Release resources
     cap.release()
     cv2.destroyAllWindows()
+    # Reset audio
+    pygame.mixer.music.stop()
+    pygame.mixer.quit()
 
 

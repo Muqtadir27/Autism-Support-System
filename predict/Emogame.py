@@ -68,24 +68,29 @@ def emotion_flashcard_game():
         show_frame()
 
     def show_frame():
-        nonlocal frame_id
+        nonlocal frame_id, video_capture, root, video_label
+        if video_capture is None:
+            return
         ret, frame = video_capture.read()
         if ret:
             frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
 
             # Detect emotions and draw rectangle around face with detected emotion
-            result = DeepFace.analyze(frame, actions=['emotion'], enforce_detection=False)
-            for face in result:
-                x, y, w, h = face['region']['x'], face['region']['y'], face['region']['w'], face['region']['h']
-                emotion = face['dominant_emotion']
-                cv2.rectangle(frame, (x, y), (x+w, y+h), (0, 255, 0), 2)
-                cv2.putText(frame, emotion, (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 255, 0), 2)
+            try:
+                result = DeepFace.analyze(frame, actions=['emotion'], enforce_detection=False)
+                for face in result:
+                    x, y, w, h = face['region']['x'], face['region']['y'], face['region']['w'], face['region']['h']
+                    emotion = face['dominant_emotion']
+                    cv2.rectangle(frame, (x, y), (x+w, y+h), (0, 255, 0), 2)
+                    cv2.putText(frame, emotion, (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 255, 0), 2)
+            except Exception as e:
+                print(f"DeepFace error in show_frame: {e}")
 
             image = Image.fromarray(frame)
-            image = ImageTk.PhotoImage(image)
+            photo = ImageTk.PhotoImage(image)
 
-            video_label.config(image=image)
-            video_label.image = image
+            video_label.config(image=photo)
+            video_label.image = photo
             frame_id = root.after(10, show_frame)
         else:
             messagebox.showerror("Error", "Failed to capture video frame.")
@@ -191,31 +196,49 @@ def emotion_flashcard_game():
 
     # Initialize Tkinter root window
     root = tk.Tk()
-    root.title("Emotion Flashcard Game")
+    root.title("NEURAL-EMO INTERFACE")
+    root.configure(bg='#0a0e14')
+    root.geometry("900x800")
 
-    flashcard_frame = tk.Frame(root, bg='#ffffff')  # Light background for better readability
-    flashcard_frame.pack(fill='both', expand=True)
+    # Sci-fi Styling
+    accent_color = '#00f2ff'
+    bg_dark = '#0a0e14'
+    text_color = '#e0e6ed'
 
-    controls_frame = tk.Frame(root, bg='#ffffff')
-    controls_frame.pack(fill='both', expand=True)
+    flashcard_frame = tk.Frame(root, bg=bg_dark, bd=2, relief='ridge')
+    flashcard_frame.pack(fill='both', expand=True, padx=20, pady=10)
 
-    start_button = tk.Button(controls_frame, text="Start Video", command=start_video, font=('Helvetica', 14), bg='#4CAF50', fg='white')
-    start_button.pack(side='left', padx=10, pady=10)
+    controls_frame = tk.Frame(root, bg=bg_dark)
+    controls_frame.pack(fill='both', expand=False, padx=20, pady=20)
 
-    capture_button = tk.Button(controls_frame, text="Capture", command=capture_emotion, font=('Helvetica', 14), bg='#2196F3', fg='white')
-    capture_button.pack(side='left', padx=10, pady=10)
+    # Style Buttons
+    btn_style = {'font': ('Courier', 12, 'bold'), 'bd': 0, 'padx': 20, 'pady': 10, 'cursor': 'hand2'}
 
-    quit_button = tk.Button(controls_frame, text="Quit", command=root.quit, font=('Helvetica', 14), bg='#f44336', fg='white')
-    quit_button.pack(side='right', padx=10, pady=10)
+    start_button = tk.Button(controls_frame, text="[INITIALIZE SENSORS]", command=start_video, **btn_style, bg='#1a2634', fg=accent_color, activebackground=accent_color, activeforeground=bg_dark)
+    start_button.pack(side='left', padx=10)
 
-    story_label = tk.Label(flashcard_frame, text="", font=('Helvetica', 16), bg='#ffffff', wraplength=600, justify='left')
-    story_label.pack(pady=20, padx=10)
+    capture_button = tk.Button(controls_frame, text="[ANALYZE EMOTION]", command=capture_emotion, **btn_style, bg='#1a2634', fg='#00ff41', activebackground='#00ff41', activeforeground=bg_dark)
+    capture_button.pack(side='left', padx=10)
 
-    video_label = tk.Label(flashcard_frame, bg='#ffffff')
-    video_label.pack()
+    quit_button = tk.Button(controls_frame, text="[TERMINATE]", command=root.quit, **btn_style, bg='#1a2634', fg='#ff3131', activebackground='#ff3131', activeforeground=bg_dark)
+    quit_button.pack(side='right', padx=10)
 
-    score_label = tk.Label(flashcard_frame, text="Score: 0", font=('Helvetica', 14), bg='#ffffff', fg='#4CAF50')
-    score_label.pack(pady=20)
+    # Header and Video Labels
+    header_label = tk.Label(flashcard_frame, text="LOGICAL SCENARIO ANALYSIS", font=('Courier', 10), bg=bg_dark, fg=accent_color)
+    header_label.pack(pady=(10, 0))
+
+    story_label = tk.Label(flashcard_frame, text="", font=('Courier', 14), bg=bg_dark, fg=text_color, wraplength=800, justify='center', pady=20)
+    story_label.pack(pady=10, padx=20)
+
+    video_label = tk.Label(flashcard_frame, bg='#111821', highlightthickness=1, highlightbackground=accent_color)
+    video_label.pack(pady=10)
+
+    score_label = tk.Label(flashcard_frame, text="NEURAL ACCURACY: 0%", font=('Courier', 12, 'bold'), bg=bg_dark, fg='#00ff41')
+    score_label.pack(pady=10)
+
+    def update_score():
+        accuracy = (score / questions_asked * 100) if questions_asked > 0 else 0
+        score_label.config(text=f"NEURAL ACCURACY: {accuracy:.1f}%")
 
     start_game()
 

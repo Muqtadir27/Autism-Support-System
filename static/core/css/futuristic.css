@@ -1,0 +1,212 @@
+:root {
+    /* Updated Professional Color Palette */
+    --primary-bg: #0a0e27;
+    --secondary-bg: #121a35;
+    --card-bg: rgba(18, 26, 53, 0.8);
+    --accent-cyan: #00d4ff;
+    --accent-blue: #0099ff;
+    --text-primary: #e8eef7;
+    --text-secondary: #8b9ab5;
+    --border-color: rgba(0, 212, 255, 0.2);
+    
+    /* Legacy colors for backward compatibility */
+    --royal-purple: #2a0845;
+    --royal-gold: #d4af37;
+    --electric-blue: #00d4ff;
+    --bg-dark: #0a0e27;
+    --glass-bg: rgba(18, 26, 53, 0.6);
+    --glass-border: rgba(0, 212, 255, 0.15);
+}
+
+body {
+    background: linear-gradient(135deg, #0a0e27 0%, #1a1f3a 50%, #0a0e27 100%);
+    color: var(--text-primary);
+    font-family: 'Inter', 'Segoe UI', -apple-system, sans-serif;
+    overflow-x: hidden;
+    line-height: 1.6;
+}
+
+/* Modern Glass Card */
+.glass-card {
+    background: var(--card-bg);
+    backdrop-filter: blur(20px);
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    padding: 30px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(0, 212, 255, 0.1);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.glass-card:hover {
+    transform: translateY(-5px);
+    border-color: var(--accent-cyan);
+    box-shadow: 0 12px 48px rgba(0, 212, 255, 0.2), 0 0 0 1px var(--accent-cyan);
+}
+
+/* Typography */
+.glow-text {
+    text-shadow: 0 0 15px var(--accent-cyan), 0 0 30px rgba(0, 212, 255, 0.3);
+    color: var(--accent-cyan);
+}
+
+.gold-text {
+    color: var(--royal-gold);
+    text-shadow: 0 0 10px rgba(212, 175, 55, 0.4);
+}
+
+/* Modern Button */
+.btn-futuristic {
+    background: var(--accent-cyan);
+    border: none;
+    color: #0a0e27;
+    padding: 14px 32px;
+    border-radius: 8px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-size: 0.875rem;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 4px 15px rgba(0, 212, 255, 0.3);
+}
+
+.btn-futuristic::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.3);
+    transform: translate(-50%, -50%);
+    transition: width 0.6s, height 0.6s;
+}
+
+.btn-futuristic:hover::before {
+    width: 300px;
+    height: 300px;
+}
+
+.btn-futuristic:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 25px rgba(0, 212, 255, 0.5);
+}
+
+/* Grid Background */
+.grid-bg {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: 
+        linear-gradient(rgba(0, 212, 255, 0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0, 212, 255, 0.03) 1px, transparent 1px);
+    background-size: 50px 50px;
+    z-index: -1;
+    opacity: 0.4;
+}
+
+/* Stats Card */
+.stat-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 24px;
+    text-align: center;
+    transition: all 0.3s ease;
+}
+
+.stat-card:hover {
+    border-color: var(--accent-cyan);
+    box-shadow: 0 8px 24px rgba(0, 212, 255, 0.15);
+}
+
+.stat-number {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--accent-cyan);
+    line-height: 1;
+    margin-bottom: 8px;
+}
+
+.stat-label {
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+/* Royal Border */
+.royal-border {
+    border: 2px solid var(--accent-cyan);
+    padding: 12px 24px;
+    position: relative;
+}
+
+.royal-border::before,
+.royal-border::after {
+    content: '';
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    border: 2px solid var(--accent-cyan);
+}
+
+.royal-border::before {
+    top: -2px;
+    left: -2px;
+    border-right: none;
+    border-bottom: none;
+}
+
+.royal-border::after {
+    bottom: -2px;
+    right: -2px;
+    border-left: none;
+    border-top: none;
+}
+
+/* Modern Input Fields */
+.input-modern {
+    background: rgba(18, 26, 53, 0.6);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 14px 18px;
+    color: var(--text-primary);
+    font-size: 0.95rem;
+    transition: all 0.3s ease;
+    width: 100%;
+}
+
+.input-modern:focus {
+    outline: none;
+    border-color: var(--accent-cyan);
+    box-shadow: 0 0 0 3px rgba(0, 212, 255, 0.1);
+}
+
+.input-modern::placeholder {
+    color: var(--text-secondary);
+}
+
+/* Section Headers */
+.section-header {
+    font-size: 2.5rem;
+    font-weight: 700;
+    text-align: center;
+    margin-bottom: 2rem;
+    position: relative;
+    display: inline-block;
+}
+
+.section-subheader {
+    font-size: 1.1rem;
+    color: var(--text-secondary);
+    text-align: center;
+    max-width: 700px;
+    margin: 0 auto 3rem;
+    line-height: 1.8;
+}

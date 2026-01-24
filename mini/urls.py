@@ -16,13 +16,13 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.conf import settings
-from django.conf.urls import static
+from django.conf.urls.static import static
 from django.urls import path
 from core.views import home
 from about.views import about,download_pdf
 from team.views import team
 from contact.views import contact
-from predict.views import predict,run_detection,download_emotion_log
+from predict.views import predict,run_detection,download_emotion_log,emotion_log_dashboard
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('',home,name='Home'),
@@ -33,5 +33,6 @@ urlpatterns = [
     path('predict/',predict,name="Predict"),
     path('download_emotion_log/', download_emotion_log, name='download_emotion_log'),
     path('Emotion_Detection_Hand/', run_detection, name='run_detection'),
+    path('log_dashboard/', emotion_log_dashboard, name='log_dashboard'),
 ]
 

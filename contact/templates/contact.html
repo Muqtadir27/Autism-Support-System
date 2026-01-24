@@ -2,48 +2,149 @@
 {% load static %}
 {% block meta %}<meta name="keywords" content="​Get in Touch">{% endblock meta %}
 {% block title %}   <title>Contact</title> {% endblock title %}
-{% block css %} <link rel="stylesheet" href="{% static "contact/css/Contact.css" %}" media="screen"> {% endblock css %}
+{% block css %} 
+<link rel="stylesheet" href="{% static "contact/css/Contact.css" %}" media="screen">
+<style>
+    .u-section-1 {
+        background: transparent !important;
+    }
+    .contact-info-banner {
+        background: rgba(0, 242, 255, 0.1);
+        border: 2px solid #00f2ff;
+        padding: 20px;
+        margin-bottom: 30px;
+        border-radius: 15px;
+        text-align: center;
+    }
+    .contact-info-banner p {
+        color: #00f2ff;
+        font-family: 'Courier New', monospace;
+        font-size: 1.1rem;
+        margin: 0;
+    }
+    .contact-info-banner strong {
+        color: #d4af37;
+    }
+</style>
+{% endblock css %}
 {% block body %}
-<section class="u-align-center u-clearfix u-image u-section-1" id="carousel_578f" data-image-width="1980" data-image-height="1200">
-    <div class="u-clearfix u-sheet u-sheet-1">
-      <div class="custom-expanded data-layout-selected u-clearfix u-layout-wrap u-layout-wrap-1">
-        <div class="u-layout">
-          <div class="u-layout-row">
-            <div class="u-align-left u-container-style u-layout-cell u-size-60 u-layout-cell-1">
-              <div class="u-container-layout u-container-layout-1">
-                <h2 class="u-align-left u-custom-font u-font-montserrat u-text u-text-body-alt-color u-text-1"> Get in Touch</h2>
-                <div class="custom-expanded u-align-left u-form u-form-1">
-                  <form action="https://forms.nicepagesrv.com/v2/form/process" class="u-clearfix u-form-spacing-28 u-form-vertical u-inner-form" style="padding: 0px;" source="email" name="form">
-                    <div class="u-form-group u-form-name u-label-top">
-                      <label for="name-5a14" class="u-label u-text-white u-label-1" wfd-invisible="true">Name</label>
-                      <input type="text" placeholder="Enter your Name" id="name-5a14" name="name" class="u-border-none u-grey-5 u-input u-input-rectangle u-radius-7 u-input-1" required="">
-                    </div>
-                    <div class="u-form-email u-form-group u-label-top">
-                      <label for="email-5a14" class="u-label u-text-white u-label-2" wfd-invisible="true">Email</label>
-                      <input type="email" placeholder="Enter a valid email address" id="email-5a14" name="email" class="u-border-none u-grey-5 u-input u-input-rectangle u-radius-7 u-input-2" required="">
-                    </div>
-                    <div class="u-form-group u-form-message u-label-top u-form-group-3">
-                      <label for="message-bf64" class="u-label u-text-white u-label-3">Message</label>
-                      <textarea placeholder="​" rows="4" cols="50" id="message-bf64" name="message" class="u-border-none u-grey-5 u-input u-input-rectangle u-radius u-input-3" required=""></textarea>
-                    </div>
-                    <div class="u-align-right u-form-group u-form-submit u-label-top">
-                      <a href="#" class="u-active-black u-border-none u-btn u-btn-round u-btn-submit u-button-style u-hover-black u-palette-1-base u-radius-7 u-text-active-white u-text-body-alt-color u-text-hover-white u-btn-1">Submit</a>
-                      <input type="submit" value="submit" class="u-form-control-hidden" wfd-invisible="true">
-                    </div>
-                    <div class="u-form-send-message u-form-send-success" wfd-invisible="true"> Thank you! Your message has been sent. </div>
-                    <div class="u-form-send-error u-form-send-message" wfd-invisible="true"> Unable to send your message. Please fix errors then try again. </div>
-                    <input type="hidden" value="" name="recaptchaResponse" wfd-invisible="true">
-                    <input type="hidden" name="formServices" value="034d23b1-805c-ebd9-8c0e-76b672db7e53">
-                  </form>
+<section style="padding: 80px 20px; min-height: 80vh;">
+    <div style="max-width: 1400px; margin: 0 auto;">
+        <h1 class="glow-text" style="font-size: 3rem; text-align: center; margin-bottom: 50px;">SYSTEM UPLINK</h1>
+        
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 50px; align-items: start;">
+            <!-- Left: Connection Visual -->
+            <div class="glass-card" style="padding: 40px; min-height: 500px; display: flex; flex-direction: column; justify-content: center; align-items: center; position: relative; overflow: hidden;">
+                <!-- Network Grid Visual -->
+                <div style="position: absolute; width: 100%; height: 100%; opacity: 0.1;">
+                    <svg width="100%" height="100%" style="position: absolute; top: 0; left: 0;">
+                        <defs>
+                            <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+                                <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#00d4ff" stroke-width="1"/>
+                            </pattern>
+                        </defs>
+                        <rect width="100%" height="100%" fill="url(#grid)" />
+                    </svg>
                 </div>
-              </div>
+                
+                <!-- Central Node -->
+                <div style="position: relative; z-index: 1; text-align: center;">
+                    <div style="width: 150px; height: 150px; margin: 0 auto 30px; border: 3px solid #00d4ff; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: rgba(0, 212, 255, 0.05); box-shadow: 0 0 40px rgba(0, 212, 255, 0.3);">
+                        <svg width="80" height="80" viewBox="0 0 80 80">
+                            <circle cx="40" cy="40" r="30" fill="none" stroke="#00d4ff" stroke-width="2">
+                                <animate attributeName="r" from="30" to="35" dur="1.5s" repeatCount="indefinite" />
+                                <animate attributeName="opacity" from="1" to="0.3" dur="1.5s" repeatCount="indefinite" />
+                            </circle>
+                            <circle cx="40" cy="40" r="20" fill="none" stroke="#00d4ff" stroke-width="2"/>
+                            <circle cx="40" cy="40" r="10" fill="#00d4ff"/>
+                            <line x1="40" y1="10" x2="40" y2="30" stroke="#00d4ff" stroke-width="2"/>
+                            <line x1="40" y1="50" x2="40" y2="70" stroke="#00d4ff" stroke-width="2"/>
+                            <line x1="10" y1="40" x2="30" y2="40" stroke="#00d4ff" stroke-width="2"/>
+                            <line x1="50" y1="40" x2="70" y2="40" stroke="#00d4ff" stroke-width="2"/>
+                        </svg>
+                    </div>
+                    <h3 style="color: #00d4ff; font-size: 1.5rem; margin-bottom: 15px;">NEURAL ENDPOINT</h3>
+                    <p style="color: #8b9ab5; font-size: 1rem; line-height: 1.6; max-width: 350px;">
+                        Establish secure communication channel to the system administrator. All transmissions are encrypted and logged.
+                    </p>
+                    <div style="margin-top: 30px; padding: 15px; background: rgba(0, 212, 255, 0.05); border-radius: 8px;">
+                        <p style="color: #e8eef7; margin: 0; font-size: 0.9rem;"><strong>Target Node:</strong></p>
+                        <p style="color: #d4af37; margin: 5px 0 0; font-size: 1.1rem; font-weight: 600;">abdulmuqtadir1027@gmail.com</p>
+                    </div>
+                </div>
             </div>
-          </div>
+
+            <!-- Right: Contact Form -->
+            <div class="glass-card" style="padding: 40px;">
+                <h2 style="color: #00d4ff; font-size: 1.8rem; margin-bottom: 10px; font-family: 'Courier New', monospace;">DIRECT_ACCESS</h2>
+                <p style="color: #8b9ab5; margin-bottom: 30px;">Initiate communication protocol by completing the form below</p>
+                
+                {% if messages %}
+                  {% for message in messages %}
+                    <div style="background: rgba(0, 255, 65, 0.1); border-left: 4px solid #00ff41; padding: 15px; margin-bottom: 25px; border-radius: 8px; color: #00ff41;">
+                      <strong style="display: block; margin-bottom: 5px;">✓ TRANSMISSION SUCCESSFUL</strong>
+                      {{ message }}
+                    </div>
+                  {% endfor %}
+                {% endif %}
+                
+                <form method="POST" style="display: grid; gap: 25px;">
+                    {% csrf_token %}
+                    
+                    <div>
+                        <label style="display: block; color: #e8eef7; margin-bottom: 8px; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px; font-family: 'Courier New', monospace;">User_Identifier</label>
+                        <input 
+                            type="text" 
+                            name="name" 
+                            placeholder="Enter your name" 
+                            required
+                            class="input-modern"
+                        />
+                    </div>
+                    
+                    <div>
+                        <label style="display: block; color: #e8eef7; margin-bottom: 8px; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px; font-family: 'Courier New', monospace;">Secure_Comms_Channel</label>
+                        <input 
+                            type="email" 
+                            name="email" 
+                            placeholder="your.email@domain.com" 
+                            required
+                            class="input-modern"
+                        />
+                    </div>
+                    
+                    <div>
+                        <label style="display: block; color: #e8eef7; margin-bottom: 8px; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px; font-family: 'Courier New', monospace;">Transmission_Data</label>
+                        <textarea 
+                            name="message" 
+                            rows="6" 
+                            placeholder="Type your message here..." 
+                            required
+                            class="input-modern"
+                            style="resize: vertical; min-height: 150px;"
+                        ></textarea>
+                    </div>
+                    
+                    <button type="submit" class="btn-futuristic" style="justify-self: end; padding: 14px 40px;">
+                        INITIATE UPLINK →
+                    </button>
+                </form>
+                
+                <div style="margin-top: 30px; padding-top: 25px; border-top: 1px solid rgba(0, 212, 255, 0.2);">
+                    <p style="color: #8b9ab5; font-size: 0.85rem; line-height: 1.6; margin: 0;">
+                        <strong style="color: #e8eef7;">System Notice:</strong> All communications are processed through secure channels and will receive a response within 24-48 hours. For urgent inquiries, please mark your message accordingly.
+                    </p>
+                </div>
+            </div>
         </div>
-      </div>
     </div>
-  </section>
-  <style class="u-overlap-style">.u-overlap:not(.u-sticky-scroll) .u-header {
-background-color: #000000 !important
-}</style>
+</section>
+
+<style>
+@media (max-width: 968px) {
+    section > div > div {
+        grid-template-columns: 1fr !important;
+    }
+}
+</style>
 {% endblock body %}

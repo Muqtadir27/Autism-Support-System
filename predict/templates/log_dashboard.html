@@ -1,0 +1,149 @@
+{% extends "./home.html" %}
+{% load static %}
+
+{% block meta %}
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="stylesheet" href="{% static 'core/css/futuristic.css' %}">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+    .dashboard-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 30px;
+        padding: 40px;
+        margin-top: 50px;
+        align-items: start;
+    }
+    .stats-card {
+        min-height: 400px;
+        display: flex;
+        flex-direction: column;
+    }
+    .stats-card canvas {
+        flex: 1;
+        max-height: 300px !important;
+    }
+    .timeline-container {
+        grid-column: span 2;
+        max-height: 400px;
+        overflow-y: auto;
+    }
+    .timeline-item {
+        border-bottom: 1px solid rgba(0, 242, 255, 0.2);
+        padding: 15px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    .emotion-tag {
+        padding: 5px 15px;
+        border-radius: 20px;
+        font-weight: bold;
+        text-transform: uppercase;
+        font-size: 0.8rem;
+    }
+</style>
+{% endblock meta %}
+
+{% block title %}
+<title>EMO_LOG | Neural Analytics</title>
+{% endblock title %}
+
+{% block body %}
+<div class="grid-bg"></div>
+<div class="u-align-center" style="padding-top: 80px;">
+    <h1 class="glow-text royal-border" style="display: inline-block; padding: 10px 40px; font-size: 2.5rem;">[LOG_ANALYTICS_DASHBOARD]</h1>
+    <p class="gold-text" style="letter-spacing: 5px; margin-top: 10px;">NEURAL DATA INTERPRETATION SEQUENCE</p>
+</div>
+
+<div class="dashboard-grid">
+    <!-- Emotion Distribution -->
+    <div class="glass-card stats-card">
+        <h3 class="glow-text" style="margin-bottom: 30px; text-align: center;">EMOTION_DISTRIBUTION</h3>
+        <div style="position: relative; height: 280px; width: 100%;">
+            <canvas id="emotionChart"></canvas>
+        </div>
+    </div>
+
+    <!-- System Status -->
+    <div class="glass-card stats-card">
+        <h3 class="gold-text" style="margin-bottom: 30px; text-align: center;">NEURAL_SYNOPSIS</h3>
+        <div style="padding: 20px;">
+            <p><span class="glow-text">CORE_STATUS:</span> <span style="color: #00ff41;">OPTIMAL</span></p>
+            <p><span class="glow-text">DATA_POINTS:</span> {{ labels|length }} CATEGORIES DETECTED</p>
+            <p style="margin-top: 20px; opacity: 0.8;">The analysis indicates a consistent emotional pattern. Personalized support sequences have been updated based on these findings.</p>
+            <a href="{% url 'download_emotion_log' %}" class="btn-futuristic" style="margin-top: 30px; display: inline-block; text-decoration: none; border-color: #00ff41; color: #00ff41;">EXPORT_RAW_DATA</a>
+        </div>
+    </div>
+
+    <!-- Timeline -->
+    <div class="glass-card timeline-container">
+        <h3 class="glow-text" style="margin-bottom: 20px;">TEMPORAL_EMOTION_LOG</h3>
+        {% if timeline %}
+            {% for entry in timeline %}
+            <div class="timeline-item">
+                <div>
+                    <span class="gold-text" style="font-size: 0.8rem;">[{{ entry.timestamp }}]</span>
+                    <span style="margin-left: 20px;">NEURAL_EVENT_DETECTED</span>
+                </div>
+                <span class="emotion-tag" style="background: rgba(0, 242, 255, 0.1); border: 1px solid #00f2ff; color: #00f2ff;">{{ entry.emotion }}</span>
+            </div>
+            {% endfor %}
+        {% else %}
+            <p class="u-align-center" style="padding: 40px;">NO_DATA_LOGGED_IN_CURRENT_SEQUENCE</p>
+        {% endif %}
+    </div>
+</div>
+
+<div class="u-align-center" style="margin-bottom: 50px;">
+    <a href="{% url 'Predict' %}" class="btn-futuristic">RETURN_TO_INTERFACE</a>
+</div>
+
+{{ labels|json_script:"labels-data" }}
+{{ data|json_script:"stats-data" }}
+
+<script>
+    const labels = JSON.parse(document.getElementById('labels-data').textContent);
+    const stats = JSON.parse(document.getElementById('stats-data').textContent);
+    const ctx = document.getElementById('emotionChart').getContext('2d');
+    new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: labels,
+            datasets: [{
+                data: stats,
+                backgroundColor: [
+                    'rgba(0, 242, 255, 0.6)', // Electric Blue
+                    'rgba(212, 175, 55, 0.6)',  // Royal Gold
+                    'rgba(163, 51, 255, 0.6)',  // Purple
+                    'rgba(0, 255, 65, 0.6)',    // Green
+                    'rgba(255, 49, 49, 0.6)'    // Red
+                ],
+                borderColor: [
+                    '#00f2ff',
+                    '#d4af37',
+                    '#a333ff',
+                    '#00ff41',
+                    '#ff3131'
+                ],
+                borderWidth: 2
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: {
+                        color: '#e0e6ed',
+                        font: {
+                            family: 'Courier New'
+                        }
+                    }
+                }
+            }
+        }
+    });
+</script>
+{% endblock body %}

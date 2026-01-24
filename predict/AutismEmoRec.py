@@ -72,12 +72,15 @@ def initialize_models():
     return net, emotion_net
 
 def send_sms_notification(client, twilio_phone_number, recipient_phone_number, emotion):
-    message = client.messages.create(
-        body=f"Frequent distress detected: {emotion}",
-        from_=twilio_phone_number,
-        to=recipient_phone_number
-    )
-    print(f"Sent SMS notification: {message.sid}")
+    try:
+        message = client.messages.create(
+            body=f"Frequent distress detected: {emotion}",
+            from_=twilio_phone_number,
+            to=recipient_phone_number
+        )
+        print(f"Sent SMS notification: {message.sid}")
+    except Exception as e:
+        print(f"Failed to send SMS notification: {e}")
 
 def log_emotion(emotion_log, emotion):
     timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
@@ -86,23 +89,40 @@ def log_emotion(emotion_log, emotion):
 def save_emotion_log(emotion_log):
     current_dir = os.path.dirname(os.path.abspath(__file__))
     log_file = os.path.join(current_dir, "emotion_log.xlsx")
-    df = pd.DataFrame(emotion_log)
-    df.to_excel(log_file, index=False)
+    
+    new_df = pd.DataFrame(emotion_log)
+    
+    if os.path.exists(log_file):
+        try:
+            existing_df = pd.read_excel(log_file)
+            combined_df = pd.concat([existing_df, new_df], ignore_index=True)
+            combined_df.to_excel(log_file, index=False)
+        except Exception as e:
+            print(f"Error reading existing log, creating new one: {e}")
+            new_df.to_excel(log_file, index=False)
+    else:
+        new_df.to_excel(log_file, index=False)
+    
     print(f"Emotion log saved to {log_file}")
 
 def tts_worker(queue, emotion_actions):
-    engine = pyttsx3.init()
-    engine.setProperty('rate', 150)  # Speed of speech
-    engine.setProperty('volume', 0.9)  # Volume level (0.0 to 1.0)
-
-    while True:
-        emotion = queue.get()
-        if emotion is None:
-            break
-        action = emotion_actions.get(emotion, "No specific action suggested.")
-        engine.say(action)
-        engine.runAndWait()
-        queue.task_done()
+    import pyttsx3
+    try:
+        engine = pyttsx3.init()
+        engine.setProperty('rate', 150)
+        engine.setProperty('volume', 0.9)
+        
+        while True:
+            emotion = queue.get()
+            if emotion is None:
+                break
+            action = emotion_actions.get(emotion, "No specific action suggested.")
+            # Only speak if not already speaking to avoid RuntimeError
+            engine.say(action)
+            engine.runAndWait()
+            queue.task_done()
+    except Exception as e:
+        print(f"TTS Worker error: {e}")
 
 def Autism_emotion_recognition():
     net, emotion_net = initialize_models()
@@ -206,9 +226,9 @@ def Autism_emotion_recognition():
         # Display the resulting frame
         cv2.imshow("Frame", frame)
 
-        # Ensure the frame is displayed properly
-        key = cv2.waitKey(1)
-        if key == ord('q'):
+        # Exit on 'q' key press or window close
+        key = cv2.waitKey(1) & 0xFF
+        if key == ord('q') or cv2.getWindowProperty("Frame", cv2.WND_PROP_VISIBLE) < 1:
             break
 
     # Stop the TTS worker

@@ -1,0 +1,255 @@
+{% extends "./home.html" %}
+{% load static %}
+
+{% block meta %}
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="stylesheet" href="{% static 'core/css/futuristic.css' %}">
+<style>
+    .vocal-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        min-height: 80vh;
+        padding: 50px 20px;
+    }
+    .mic-visualization {
+        width: 250px;
+        height: 250px;
+        border-radius: 50%;
+        background: rgba(212, 175, 55, 0.05);
+        border: 3px solid #d4af37;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 40px;
+        position: relative;
+        transition: all 0.3s ease;
+    }
+    .mic-visualization.listening {
+        border-color: #00ff41;
+        box-shadow: 0 0 40px rgba(0, 255, 65, 0.6);
+        animation: pulse 1.5s infinite;
+    }
+    @keyframes pulse {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.05); }
+    }
+    .mic-icon-svg {
+        width: 80px;
+        height: 80px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    .mic-icon-svg:hover {
+        transform: scale(1.1);
+    }
+    .status-display {
+        min-height: 200px;
+        padding: 30px;
+        text-align: center;
+    }
+    .detected-text {
+        font-size: 1.3rem;
+        color: #00d4ff;
+        margin: 20px 0;
+        min-height: 60px;
+        font-style: italic;
+    }
+    .emotion-badge {
+        display: inline-block;
+        padding: 10px 25px;
+        border-radius: 20px;
+        font-size: 1.1rem;
+        font-weight: 600;
+        margin: 15px 0;
+    }
+    .emotion-badge.happy { background: rgba(0, 255, 65, 0.2); color: #00ff41; border: 2px solid #00ff41; }
+    .emotion-badge.sad { background: rgba(0, 150, 255, 0.2); color: #0096ff; border: 2px solid #0096ff; }
+    .emotion-badge.angry { background: rgba(255, 65, 65, 0.2); color: #ff4141; border: 2px solid #ff4141; }
+    .emotion-badge.fear { background: rgba(212, 175, 55, 0.2); color: #d4af37; border: 2px solid #d4af37; }
+    .emotion-badge.neutral { background: rgba(0, 212, 255, 0.2); color: #00d4ff; border: 2px solid #00d4ff; }
+    .instruction-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 15px;
+        margin-top: 30px;
+    }
+    .instruction-card {
+        background: rgba(0, 212, 255, 0.05);
+        border: 1px solid rgba(0, 212, 255, 0.2);
+        border-radius: 10px;
+        padding: 15px;
+        text-align: center;
+    }
+</style>
+{% endblock meta %}
+
+{% block title %}
+<title>VOCAL_INT | Neural Interface</title>
+{% endblock title %}
+
+{% block body %}
+<div class="grid-bg"></div>
+<div class="vocal-container">
+    <h1 class="glow-text" style="font-size: 2.5rem; margin-bottom: 40px;">[VOCAL INTELLIGENCE SYSTEM]</h1>
+    
+    <div class="mic-visualization" id="micVisualization">
+        <svg class="mic-icon-svg" id="micButton" viewBox="0 0 80 80" fill="none" onclick="toggleMicrophone()">
+            <rect x="30" y="15" width="20" height="35" rx="10" stroke="#d4af37" stroke-width="3"/>
+            <circle cx="40" cy="23" r="2" fill="#d4af37"/>
+            <circle cx="40" cy="30" r="2" fill="#d4af37"/>
+            <circle cx="40" cy="37" r="2" fill="#d4af37"/>
+            <circle cx="40" cy="44" r="2" fill="#d4af37"/>
+            <path d="M 25 40 Q 25 55 40 55 Q 55 55 55 40" stroke="#d4af37" stroke-width="3" fill="none"/>
+            <path d="M 40 55 L 40 65" stroke="#d4af37" stroke-width="3"/>
+            <path d="M 30 65 L 50 65" stroke="#d4af37" stroke-width="3"/>
+        </svg>
+    </div>
+    
+    <div class="glass-card status-display" style="width: 100%; max-width: 800px;">
+        <p id="statusText" style="color: #d4af37; font-size: 1.2rem; font-family: 'Courier New', monospace;">
+            Click microphone to start listening
+        </p>
+        
+        <div id="detectedTextContainer" style="display: none;">
+            <div class="detected-text" id="detectedText">"..."</div>
+            <div id="emotionBadge" class="emotion-badge neutral">ANALYZING...</div>
+            <p id="responseText" style="color: #8b9ab5; margin-top: 20px; font-size: 1rem; line-height: 1.6;"></p>
+        </div>
+        
+        <div class="instruction-grid">
+            <div class="instruction-card">
+                <div style="font-size: 2rem; margin-bottom: 10px;">🎤</div>
+                <p style="color: #00d4ff; font-size: 0.9rem; margin: 0;">Click to Activate</p>
+            </div>
+            <div class="instruction-card">
+                <div style="font-size: 2rem; margin-bottom: 10px;">💬</div>
+                <p style="color: #00d4ff; font-size: 0.9rem; margin: 0;">Speak Clearly</p>
+            </div>
+            <div class="instruction-card">
+                <div style="font-size: 2rem; margin-bottom: 10px;">🛑</div>
+                <p style="color: #00d4ff; font-size: 0.9rem; margin: 0;">Say "Stop" to Exit</p>
+            </div>
+        </div>
+    </div>
+    
+    <div style="margin-top: 30px;">
+        <a href="{% url 'Predict' %}" class="btn-futuristic" style="border-color: #ff3131; color: #ff3131;">TERMINATE SESSION</a>
+    </div>
+</div>
+
+<script>
+let isListening = false;
+let recognition = null;
+
+function toggleMicrophone() {
+    const statusText = document.getElementById('statusText');
+    const micViz = document.getElementById('micVisualization');
+    const detectedContainer = document.getElementById('detectedTextContainer');
+    
+    if (!isListening) {
+        startListening();
+    } else {
+        stopListening();
+    }
+}
+
+function startListening() {
+    if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+        alert('Speech recognition not supported in this browser. Please use Chrome or Edge.');
+        return;
+    }
+    
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    recognition = new SpeechRecognition();
+    recognition.continuous = true;
+    recognition.interimResults = false;
+    recognition.lang = 'en-US';
+    
+    isListening = true;
+    document.getElementById('micVisualization').classList.add('listening');
+    document.getElementById('statusText').textContent = 'LISTENING... Speak now';
+    document.getElementById('detectedTextContainer').style.display = 'block';
+    
+    recognition.onresult = function(event) {
+        const last = event.results.length - 1;
+        const text = event.results[last][0].transcript.toLowerCase();
+        
+        document.getElementById('detectedText').textContent = `"${text}"`;
+        
+        // Check for exit keywords
+        if (text.includes('stop') || text.includes('exit') || text.includes('quit')) {
+            document.getElementById('statusText').textContent = 'Session terminated';
+            document.getElementById('emotionBadge').textContent = 'TERMINATED';
+            document.getElementById('emotionBadge').className = 'emotion-badge neutral';
+            document.getElementById('responseText').textContent = 'Thank you for using the Vocal Intelligence System.';
+            stopListening();
+            return;
+        }
+        
+        // Detect emotion from keywords
+        let emotion = 'neutral';
+        let response = "I'm listening. Feel free to express yourself.";
+        
+        const keywords = {
+            happy: ['happy', 'great', 'good', 'excellent', 'joy', 'wonderful', 'fine', 'fantastic', 'amazing'],
+            sad: ['sad', 'down', 'bad', 'unhappy', 'lonely', 'hurt', 'cry', 'depressed', 'upset'],
+            angry: ['angry', 'mad', 'frustrated', 'hate', 'annoyed', 'furious', 'irritated'],
+            fear: ['scared', 'afraid', 'anxious', 'nervous', 'worry', 'help', 'panic', 'terrified']
+        };
+        
+        const responses = {
+            happy: "It's wonderful to hear that you're feeling happy! Keep that positive energy going.",
+            sad: "I hear that you're feeling a bit down. Remember, it's okay to feel this way. I'm here for you.",
+            angry: "I can hear some frustration. Let's take a deep breath together. You're doing great.",
+            fear: "You sound a bit anxious. You are in a safe space. Everything is going to be alright.",
+            neutral: "I'm listening. Feel free to express yourself whenever you're ready."
+        };
+        
+        for (const [emotionKey, words] of Object.entries(keywords)) {
+            if (words.some(word => text.includes(word))) {
+                emotion = emotionKey;
+                response = responses[emotionKey];
+                break;
+            }
+        }
+        
+        document.getElementById('emotionBadge').textContent = emotion.toUpperCase();
+        document.getElementById('emotionBadge').className = `emotion-badge ${emotion}`;
+        document.getElementById('responseText').textContent = response;
+        
+        // Speak response if possible
+        if ('speechSynthesis' in window) {
+            const utterance = new SpeechSynthesisUtterance(response);
+            utterance.rate = 0.9;
+            utterance.pitch = 1;
+            window.speechSynthesis.speak(utterance);
+        }
+    };
+    
+    recognition.onerror = function(event) {
+        console.error('Speech recognition error:', event.error);
+        document.getElementById('statusText').textContent = `Error: ${event.error}. Click mic to retry.`;
+        stopListening();
+    };
+    
+    recognition.onend = function() {
+        if (isListening) {
+            recognition.start(); // Restart if still in listening mode
+        }
+    };
+    
+    recognition.start();
+}
+
+function stopListening() {
+    isListening = false;
+    if (recognition) {
+        recognition.stop();
+    }
+    document.getElementById('micVisualization').classList.remove('listening');
+    document.getElementById('statusText').textContent = 'Click microphone to start listening';
+}
+</script>
+{% endblock body %}
