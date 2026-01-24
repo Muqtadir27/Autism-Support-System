@@ -35,10 +35,15 @@ emotion_colors = {
     'neutral': (255, 255, 255)  # White
 }
 
-# Initialize text-to-speech engine
-engine = pyttsx3.init()
-engine.setProperty('rate', 150)  # Speed of speech
-engine.setProperty('volume', 0.9)  # Volume level (0.0 to 1.0)
+# Initialize text-to-speech engine with error handling
+try:
+    engine = pyttsx3.init()
+    engine.setProperty('rate', 150)  # Speed of speech
+    engine.setProperty('volume', 0.9)  # Volume level (0.0 to 1.0)
+    TTS_AVAILABLE = True
+except Exception as e:
+    print(f"Text-to-speech not available: {e}")
+    TTS_AVAILABLE = False
 
 # Twilio configuration
 account_sid = 'AC56dc47b7bb55ca14c447b9954c6ab34c'
@@ -106,23 +111,33 @@ def save_emotion_log(emotion_log):
     print(f"Emotion log saved to {log_file}")
 
 def tts_worker(queue, emotion_actions):
-    import pyttsx3
+    # Initialize TTS engine with error handling
     try:
-        engine = pyttsx3.init()
-        engine.setProperty('rate', 150)
-        engine.setProperty('volume', 0.9)
-        
-        while True:
-            emotion = queue.get()
-            if emotion is None:
-                break
-            action = emotion_actions.get(emotion, "No specific action suggested.")
-            # Only speak if not already speaking to avoid RuntimeError
-            engine.say(action)
-            engine.runAndWait()
-            queue.task_done()
+        import pyttsx3
+        local_engine = pyttsx3.init()
+        local_engine.setProperty('rate', 150)
+        local_engine.setProperty('volume', 0.9)
+        local_tts_available = True
     except Exception as e:
-        print(f"TTS Worker error: {e}")
+        print(f"Local TTS not available: {e}")
+        local_tts_available = False
+        
+    while True:
+        emotion = queue.get()
+        if emotion is None:
+            break
+        action = emotion_actions.get(emotion, "No specific action suggested.")
+        
+        if local_tts_available:
+            try:
+                local_engine.say(action)
+                local_engine.runAndWait()
+            except Exception as e:
+                print(f"TTS Error: {e}")
+        else:
+            print(f"TTS Unavailable - Would have said: {action}")
+            
+        queue.task_done()
 
 def Autism_emotion_recognition():
     net, emotion_net = initialize_models()

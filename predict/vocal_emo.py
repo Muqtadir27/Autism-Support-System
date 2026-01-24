@@ -5,9 +5,15 @@ import time
 
 def vocal_expression_interpretation():
     recognizer = sr.Recognizer()
-    engine = pyttsx3.init()
-    engine.setProperty('rate', 150)
-    engine.setProperty('volume', 0.9)
+    # Initialize text-to-speech engine with error handling
+    try:
+        engine = pyttsx3.init()
+        engine.setProperty('rate', 150)
+        engine.setProperty('volume', 0.9)
+        tts_available = True
+    except Exception as e:
+        print(f"Text-to-speech not available: {e}")
+        tts_available = False
 
     # Support Responses
     support_responses = {
@@ -28,8 +34,14 @@ def vocal_expression_interpretation():
 
     def speak(text):
         print(f"[TTS] Speaking: {text}")
-        engine.say(text)
-        engine.runAndWait()
+        if tts_available:
+            try:
+                engine.say(text)
+                engine.runAndWait()
+            except Exception as e:
+                print(f"TTS Error: {e}")
+        else:
+            print(f"TTS Unavailable - Would have said: {text}")
 
     print("=" * 60)
     print("VOCAL INTERPRETATION MODULE: ACTIVE")
@@ -87,7 +99,11 @@ def vocal_expression_interpretation():
     except Exception as e:
         print(f"[FATAL] System Error: {e}")
     finally:
-        engine.stop()
+        if tts_available:
+            try:
+                engine.stop()
+            except Exception as e:
+                print(f"TTS Stop Error: {e}")
         print("=" * 60)
         print("VOCAL INTERPRETATION MODULE: TERMINATED")
         print("=" * 60)
