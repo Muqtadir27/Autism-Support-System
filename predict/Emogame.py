@@ -1,6 +1,5 @@
 import tkinter as tk
 from tkinter import messagebox
-import cv2
 from PIL import Image, ImageTk
 from deepface import DeepFace
 import pygame
@@ -57,6 +56,7 @@ def emotion_flashcard_game():
     INCORRECT_SOUND = 'sounds/oops.wav'
 
     def start_video():
+        import cv2
         nonlocal video_capture, frame_id
         start_button.config(state=tk.DISABLED)
         video_capture = cv2.VideoCapture(0)
@@ -68,6 +68,7 @@ def emotion_flashcard_game():
         show_frame()
 
     def show_frame():
+        import cv2
         nonlocal frame_id, video_capture, root, video_label
         if video_capture is None:
             return
@@ -97,6 +98,7 @@ def emotion_flashcard_game():
             root.quit()
 
     def detect_emotion(frame):
+        import cv2
         try:
             result = DeepFace.analyze(frame, actions=['emotion'], enforce_detection=False)
             if len(result) > 0:

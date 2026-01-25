@@ -1,11 +1,10 @@
-import cv2
-import cv2.data
 from deepface import DeepFace
 import mediapipe as mp
 import pygame
 from collections import deque
 
 def emotion_and_gesture_detection():
+    import cv2
     # Local functions
     def play_sound(emotion):
         if emotion == 'angry':
@@ -28,6 +27,7 @@ def emotion_and_gesture_detection():
         pygame.mixer.music.stop()
 
     def show_quote(frame, quote, x, y):
+        import cv2
         cv2.rectangle(frame, (x, y - 60), (x + 500, y - 20), (0, 0, 0), -1)  # Black background
         cv2.putText(frame, quote, (x + 10, y - 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2)
 

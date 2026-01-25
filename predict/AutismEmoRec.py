@@ -1,7 +1,5 @@
-import cv2
 import numpy as np
 import os
-from tensorflow.keras.models import load_model # type: ignore
 import threading
 import pyttsx3
 from datetime import datetime
@@ -59,6 +57,10 @@ def initialize_models():
     prototxt_path = os.path.join(current_dir, "Autismfiles/deploy.prototxt.txt")
     caffemodel_path = os.path.join(current_dir, "Autismfiles/res10_300x300_ssd_iter_140000.caffemodel")
     emotion_model_path = os.path.join(current_dir, "Autismfiles/fer2013_mini_XCEPTION.102-0.66.hdf5")
+    
+    # Import cv2 and tensorflow.keras locally to avoid loading at startup
+    import cv2
+    from tensorflow.keras.models import load_model # type: ignore
 
     # Check if the files exist
     if not os.path.isfile(prototxt_path):
@@ -140,6 +142,8 @@ def tts_worker(queue, emotion_actions):
         queue.task_done()
 
 def Autism_emotion_recognition():
+    # Import cv2 locally to avoid loading at startup
+    import cv2
     net, emotion_net = initialize_models()
 
     # Initialize the video stream
