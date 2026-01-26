@@ -25,7 +25,25 @@ This project is configured for automatic deployment using GitHub Actions. When y
 2. Static files are collected
 3. The application is deployed to your chosen platform (Vercel, Heroku, or Railway)
 
-## Deployment Setup
+## Deployment
+
+### Railway Deployment (Recommended)
+
+To deploy this application on Railway:
+
+1. Make sure you have the Railway CLI installed or access to the Railway dashboard
+2. Link your GitHub repository to Railway
+3. Set the required environment variables:
+   - `DJANGO_SECRET_KEY`: A secure Django secret key
+   - `DEBUG`: Set to `False` for production
+   - `EMAIL_HOST_USER` and `EMAIL_HOST_PASSWORD`: For email notifications
+4. The application will automatically build and deploy using the configuration in `railway.toml`
+
+For detailed instructions, see the [RAILWAY_DEPLOYMENT.md](./RAILWAY_DEPLOYMENT.md) file.
+
+### Vercel Deployment
+
+The project also includes Vercel configuration in `vercel.json` for alternative deployment. Setup
 
 ### Option 1: Vercel (Recommended)
 

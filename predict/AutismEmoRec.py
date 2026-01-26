@@ -1,5 +1,7 @@
+import cv2
 import numpy as np
 import os
+from tensorflow.keras.models import load_model # type: ignore
 import threading
 import pyttsx3
 from datetime import datetime
@@ -54,9 +56,9 @@ client = Client(account_sid, auth_token)
 def initialize_models():
     # Get the absolute paths of the model files
     current_dir = os.path.dirname(os.path.abspath(__file__))
-    prototxt_path = os.path.join(current_dir, "Autismfiles/deploy.prototxt.txt")
-    caffemodel_path = os.path.join(current_dir, "Autismfiles/res10_300x300_ssd_iter_140000.caffemodel")
-    emotion_model_path = os.path.join(current_dir, "Autismfiles/fer2013_mini_XCEPTION.102-0.66.hdf5")
+    prototxt_path = os.path.join(current_dir, "Autismfiles", "deploy.prototxt.txt")
+    caffemodel_path = os.path.join(current_dir, "Autismfiles", "res10_300x300_ssd_iter_140000.caffemodel")
+    emotion_model_path = os.path.join(current_dir, "Autismfiles", "fer2013_mini_XCEPTION.102-0.66.hdf5")
     
     # Import cv2 and tensorflow.keras locally to avoid loading at startup
     import cv2
@@ -142,122 +144,279 @@ def tts_worker(queue, emotion_actions):
         queue.task_done()
 
 def Autism_emotion_recognition():
+    print("Initializing Autism Emotion Recognition System...")
+    
     # Import cv2 locally to avoid loading at startup
     import cv2
-    net, emotion_net = initialize_models()
-
-    # Initialize the video stream
-    cap = cv2.VideoCapture(0)  # Use 0 for the default camera
-
-    # Check if camera opened successfully
-    if not cap.isOpened():
-        print("Error: Could not open camera.")
+    import platform
+    import ctypes
+    print("' OpenCV imported successfully")
+    
+    # Initialize models with error handling
+    print("Loading AI models...")
+    try:
+        net, emotion_net = initialize_models()
+        print("' AI models loaded successfully")
+    except Exception as e:
+        print(f"' Error loading models: {e}")
         return
+        
+    # Initialize the video stream with multiple camera indices
+    print("Initializing camera...")
+    cap = None
+    camera_index = 0
+    
+    # Try different camera indices
+    for i in range(5):  # Try more camera indices
+        print(f"Trying camera index {i}...")
+        try:
+            temp_cap = cv2.VideoCapture(i)
+            # Set camera properties for better performance
+            temp_cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
+            temp_cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
+            temp_cap.set(cv2.CAP_PROP_FPS, 30)
+            
+            if temp_cap.isOpened():
+                ret, test_frame = temp_cap.read()
+                if ret and test_frame is not None:
+                    print(f"' Camera {i} working properly")
+                    cap = temp_cap
+                    camera_index = i
+                    break
+                else:
+                    temp_cap.release()
+            else:
+                print(f"Camera index {i} not available")
+        except Exception as e:
+            print(f"Error trying camera index {i}: {e}")
+            continue
+    
+    if cap is None:
+        print("' Error: Could not open any camera.")
+        print("Please check:")
+        print("1. Camera is connected and not in use by another application")
+        print("2. Camera permissions are granted")
+        print("3. Try connecting an external webcam")
+        return
+        
+    print(f"' Using camera index {camera_index}")
 
     # Initialize text-to-speech thread
+    print("Initializing Text-to-Speech...")
     tts_queue = Queue()
-    threading.Thread(target=tts_worker, args=(tts_queue, emotion_actions), daemon=True).start()
+    tts_thread = threading.Thread(target=tts_worker, args=(tts_queue, emotion_actions), daemon=True)
+    tts_thread.start()
+    print("' TTS system initialized")
 
     # Initialize emotion log
     emotion_log = []
     distress_count = 0
     emotion_buffer = deque(maxlen=15)  # Buffer to store last 15 detected emotions
+    
+    print("' Emotion recognition system ready!")
+    print("Press 'q' or close the window to exit")
+    print("-" * 50)
+    
+    # Create OpenCV window explicitly before the loop to ensure it appears
+    window_name = "Autism Emotion Recognition - Press 'q' to quit"
+    try:
+        cv2.namedWindow(window_name, cv2.WINDOW_AUTOSIZE)
+        # Create a black frame to show immediately so window appears
+        black_frame = np.zeros((480, 640, 3), dtype=np.uint8)
+        cv2.putText(black_frame, "Initializing camera...", (50, 240), 
+                   cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2)
+        cv2.imshow(window_name, black_frame)
+        cv2.waitKey(1)  # Force window to update
+        
+    except Exception as e:
+        print(f"Warning: Could not create window: {e}")
+        import traceback
+        traceback.print_exc()
+    
+    frame_count = 0
+    faces_detected = 0
+    
+    try:
+        while True:
+            # Capture frame-by-frame
+            ret, frame = cap.read()
+            if not ret:
+                print("' Failed to capture frame")
+                break  # Exit the loop if frame capture fails
 
-    while True:
-        # Capture frame-by-frame
-        ret, frame = cap.read()
-        if not ret:
-            print("Failed to capture frame")
-            break  # Exit the loop if frame capture fails
+            frame_count += 1
+            
+            # Get the frame dimensions
+            (h, w) = frame.shape[:2]
 
-        # Get the frame dimensions
-        (h, w) = frame.shape[:2]
+            # Preprocess the frame: resize and create a blob
+            blob = cv2.dnn.blobFromImage(cv2.resize(frame, (300, 300)), 1.0,
+                                         (300, 300), (104.0, 177.0, 123.0))
 
-        # Preprocess the frame: resize and create a blob
-        blob = cv2.dnn.blobFromImage(cv2.resize(frame, (300, 300)), 1.0,
-                                     (300, 300), (104.0, 177.0, 123.0))
+            # Pass the blob through the network and obtain the detections
+            net.setInput(blob)
+            detections = net.forward()
 
-        # Pass the blob through the network and obtain the detections
-        net.setInput(blob)
-        detections = net.forward()
+            current_faces = 0
+            
+            # Loop over the detections
+            for i in range(0, detections.shape[2]):
+                # Extract the confidence (i.e., probability) associated with the prediction
+                confidence = detections[0, 0, i, 2]
 
-        # Loop over the detections
-        for i in range(0, detections.shape[2]):
-            # Extract the confidence (i.e., probability) associated with the prediction
-            confidence = detections[0, 0, i, 2]
+                # Filter out weak detections by ensuring the confidence is greater than a threshold
+                if confidence > 0.5:
+                    current_faces += 1
+                    
+                    # Compute the (x, y)-coordinates of the bounding box for the face
+                    box = detections[0, 0, i, 3:7] * np.array([w, h, w, h])
+                    (startX, startY, endX, endY) = box.astype("int")
 
-            # Filter out weak detections by ensuring the confidence is greater than a threshold
-            if confidence > 0.5:
-                # Compute the (x, y)-coordinates of the bounding box for the face
-                box = detections[0, 0, i, 3:7] * np.array([w, h, w, h])
-                (startX, startY, endX, endY) = box.astype("int")
+                    # Ensure the bounding box is within the frame dimensions
+                    startX, startY = max(0, startX), max(0, startY)
+                    endX, endY = min(w, endX), min(h, endY)
 
-                # Ensure the bounding box is within the frame dimensions
-                startX, startY = max(0, startX), max(0, startY)
-                endX, endY = min(w, endX), min(h, endY)
+                    # Extract the face ROI (Region of Interest)
+                    face_roi = frame[startY:endY, startX:endX]
 
-                # Extract the face ROI (Region of Interest)
-                face_roi = frame[startY:endY, startX:endX]
+                    # Ensure the ROI is valid
+                    if face_roi.size == 0:
+                        continue
 
-                # Ensure the ROI is valid
-                if face_roi.size == 0:
-                    continue
+                    # Preprocess the face ROI for emotion recognition
+                    face_roi_resized = cv2.resize(face_roi, (64, 64))
+                    face_roi_gray = cv2.cvtColor(face_roi_resized, cv2.COLOR_BGR2GRAY)
+                    face_roi_normalized = face_roi_gray.astype("float") / 255.0
+                    face_roi_expanded = np.expand_dims(face_roi_normalized, axis=-1)
+                    face_roi_batch = np.expand_dims(face_roi_expanded, axis=0)
 
-                # Preprocess the face ROI for emotion recognition
-                face_roi = cv2.resize(face_roi, (64, 64))
-                face_roi = cv2.cvtColor(face_roi, cv2.COLOR_BGR2GRAY)
-                face_roi = face_roi.astype("float") / 255.0
-                face_roi = np.expand_dims(face_roi, axis=-1)
-                face_roi = np.expand_dims(face_roi, axis=0)
+                    try:
+                        # Predict emotion using HDF5 model
+                        emotion_preds = emotion_net.predict(face_roi_batch, verbose=0)
+                        emotion_idx = np.argmax(emotion_preds)
+                        emotion = emotion_labels[emotion_idx]
 
-                # Predict emotion using HDF5 model
-                emotion_preds = emotion_net.predict(face_roi, verbose=0)
-                emotion_idx = np.argmax(emotion_preds)
-                emotion = emotion_labels[emotion_idx]
+                        # Add the detected emotion to the buffer
+                        emotion_buffer.append(emotion)
 
-                # Add the detected emotion to the buffer
-                emotion_buffer.append(emotion)
+                        # Determine the most frequent emotion in the buffer
+                        if len(emotion_buffer) > 0:
+                            most_common_emotion = Counter(emotion_buffer).most_common(1)[0][0]
+                        else:
+                            most_common_emotion = emotion  # Fallback to current emotion
 
-                # Determine the most frequent emotion in the buffer
-                most_common_emotion = Counter(emotion_buffer).most_common(1)[0][0]
+                        # Log the detected emotion
+                        log_emotion(emotion_log, most_common_emotion)
 
-                # Log the detected emotion
-                log_emotion(emotion_log, most_common_emotion)
+                        # Draw the bounding box around the face along with the emotion label
+                        text = f"{most_common_emotion}"
+                        y = startY - 10 if startY - 10 > 10 else startY + 10
+                        color = emotion_colors.get(most_common_emotion, (0, 255, 0))
+                        cv2.rectangle(frame, (startX, startY), (endX, endY), color, 2)
+                        cv2.putText(frame, text, (startX, y),
+                                    cv2.FONT_HERSHEY_SIMPLEX, 0.9, color, 2)
 
-                # Draw the bounding box around the face along with the emotion label
-                text = f"{most_common_emotion}"
-                y = startY - 10 if startY - 10 > 10 else startY + 10
-                color = emotion_colors.get(most_common_emotion, (0, 255, 0))
-                cv2.rectangle(frame, (startX, startY), (endX, endY), color, 2)
-                cv2.putText(frame, text, (startX, y),
-                            cv2.FONT_HERSHEY_SIMPLEX, 0.9, color, 2)
+                        # Queue the TTS action (only if TTS is available and not overwhelmed)
+                        if TTS_AVAILABLE:
+                            tts_queue.put(most_common_emotion)
 
-                # Queue the TTS action
-                tts_queue.put(most_common_emotion)
+                        # Handle distress notification
+                        if most_common_emotion in ['angry', 'fear', 'sad']:
+                            distress_count += 1
+                            if distress_count >= 10:  # Increased threshold to reduce spam
+                                send_sms_notification(client, twilio_phone_number, recipient_phone_number, most_common_emotion)
+                                distress_count = 0  # Reset distress count
+                                
+                    except Exception as e:
+                        print(f"Error in emotion prediction: {e}")
+                        import traceback
+                        traceback.print_exc()
+                        continue
 
-                # Handle distress notification
-                if most_common_emotion in ['angry', 'fear', 'sad']:
-                    distress_count += 1
-                    if distress_count >= 6:  # Adjust threshold as needed
-                        send_sms_notification(client, twilio_phone_number, recipient_phone_number, most_common_emotion)
-                        distress_count = 0  # Reset distress count
+            # Update face detection counter
+            if current_faces > 0:
+                faces_detected += 1
+                
+            # Display statistics every 30 frames
+            if frame_count % 30 == 0:
+                print(f"Frame: {frame_count}, Faces detected: {current_faces}, Total faces detected: {faces_detected}")
 
-        # Display the resulting frame
-        cv2.imshow("Frame", frame)
+            # Display the resulting frame - Try to show the window
+            try:
+                cv2.imshow(window_name, frame)
+            except cv2.error as e:
+                if "The function is not implemented" in str(e):
+                    print("GUI not available. Running in headless mode...")
+                    print("Frame processing continuing without display...")
+                    # Just continue processing without GUI
+                    import time
+                    time.sleep(0.1)  # Small delay to prevent excessive CPU usage
+                    continue  # Skip the key press check if GUI is not available
+                else:
+                    raise e  # Re-raise if it's a different error
 
-        # Exit on 'q' key press or window close
-        key = cv2.waitKey(1) & 0xFF
-        if key == ord('q') or cv2.getWindowProperty("Frame", cv2.WND_PROP_VISIBLE) < 1:
-            break
+            # Exit on 'q' key press or window close
+            key = cv2.waitKey(1) & 0xFF
+            if key == ord('q'):
+                print("Exiting emotion recognition...")
+                break
+            
+            # Check if window was closed
+            try:
+                if cv2.getWindowProperty(window_name, cv2.WND_PROP_VISIBLE) < 1:
+                    print("Window closed by user...")
+                    break
+            except:
+                # Window might have been destroyed
+                break
+                
+    except Exception as e:
+        print(f"' Error during emotion recognition: {e}")
+        import traceback
+        traceback.print_exc()
 
-    # Stop the TTS worker
-    tts_queue.put(None)
-
-    # Save the emotion log to a file
-    save_emotion_log(emotion_log)
-
-    # Release the capture and close any OpenCV windows
-    cap.release()
-    cv2.destroyAllWindows()
-
-    return emotion_log
+    finally:
+        # Cleanup section
+        print("Cleaning up resources...")
+        
+        try:
+            # Stop the TTS worker
+            if 'tts_queue' in locals():
+                tts_queue.put(None)
+                print("' TTS worker stopped")
+        except Exception as e:
+            print(f"Error stopping TTS worker: {e}")
+            
+        try:
+            # Save the emotion log to a file
+            if 'emotion_log' in locals() and emotion_log:
+                save_emotion_log(emotion_log)
+                print("' Emotion log saved")
+        except Exception as e:
+            print(f"Error saving emotion log: {e}")
+            
+        try:
+            # Release the capture
+            if 'cap' in locals() and cap is not None:
+                cap.release()
+                print("' Camera released")
+        except Exception as e:
+            print(f"Error releasing camera: {e}")
+            
+        try:
+            # Close any OpenCV windows
+            cv2.destroyAllWindows()
+            print("' OpenCV windows closed")
+        except cv2.error as e:
+            if "The function is not implemented" in str(e):
+                print("' GUI cleanup skipped (headless mode)")
+            else:
+                print(f"Error closing windows: {e}")
+        except Exception as e:
+            print(f"Error closing windows: {e}")
+            
+        print("' Cleanup completed")
+        if 'emotion_log' in locals():
+            return emotion_log
+        else:
+            return []

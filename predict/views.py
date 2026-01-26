@@ -2,6 +2,8 @@ from django.shortcuts import render, redirect
 from django.http import HttpResponse, JsonResponse,FileResponse,Http404
 import os
 import threading
+import subprocess
+import sys
 import pandas as pd
 from .AutismEmoRec import Autism_emotion_recognition
 from .facehand import emotion_and_gesture_detection
@@ -28,16 +30,42 @@ def run_detection(request):
         }
         return render(request, 'vocal_support.html', context)
     elif request.method == 'POST' and 'autism_emotion_recognition_button' in request.POST:
-        # Start Autism emotion recognition in a new thread
-        thread = threading.Thread(target=Autism_emotion_recognition)
-        thread.start()
+        # Start Autism emotion recognition in a separate process so OpenCV window displays properly
+        try:
+            # Get the path to the script
+            current_dir = os.path.dirname(os.path.abspath(__file__))
+            script_path = os.path.join(current_dir, 'run_emotion_recognition.py')
+            
+            # Verify script exists
+            if not os.path.exists(script_path):
+                raise FileNotFoundError(f"Script not found: {script_path}")
+            
+            # Get Python executable from the virtual environment or system
+            python_exe = sys.executable
+            
+            print(f"Starting emotion recognition process...")
+            print(f"Python: {python_exe}")
+            print(f"Script: {script_path}")
+            print(f"Working dir: {os.path.dirname(current_dir)}")
+            
+            # Start the process - use threading instead (simpler and works better for GUI)
+            thread = threading.Thread(target=Autism_emotion_recognition, daemon=False)
+            thread.start()
+            print(f"Emotion recognition thread started")
+        except Exception as e:
+            error_msg = f"Error starting emotion recognition process: {e}"
+            print(error_msg)
+            import traceback
+            traceback.print_exc()
         
         context = {
             'status': 'Detection started',
-            'note': 'Please Wait !!!!!!!',
+            'note': 'Camera window should open shortly. Please face the camera.',
             'instructions': [
-                'Face the camera.',
-                'Download the Emotion log file from below',
+                'A camera window will open showing your face.',
+                'The system will detect your emotion in real-time.',
+                'Press "q" in the camera window to stop detection.',
+                'Download the Emotion log file from below when done.',
             ]
         }
         return render(request, 'Autism.html', context)
