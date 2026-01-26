@@ -97,12 +97,16 @@ def download_emotion_log(request):
         raise Http404("Log file not found")
 
 def process_camera_frame(request):
+    print(f"Received request to process camera frame")
     if request.method == 'POST':
         try:
             # Get the uploaded image
             image_file = request.FILES.get('image')
             if not image_file:
+                print("No image file received")
                 return JsonResponse({'success': False, 'error': 'No image provided'})
+            
+            print(f"Received image file: {image_file.name}, size: {image_file.size} bytes")
             
             # Process the image to detect emotion
             # Import the function here to avoid startup issues
@@ -110,10 +114,14 @@ def process_camera_frame(request):
             
             # Call the emotion detection function
             emotion = process_single_frame_for_emotion(image_file)
+            print(f"Detected emotion: {emotion}")
             
             return JsonResponse({'success': True, 'emotion': emotion})
         except Exception as e:
             print(f"Error processing camera frame: {e}")
+            import traceback
+            traceback.print_exc()
             return JsonResponse({'success': False, 'error': str(e)})
     else:
+        print("Received non-POST request")
         return JsonResponse({'success': False, 'error': 'Only POST requests allowed'})

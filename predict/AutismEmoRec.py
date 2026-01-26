@@ -458,6 +458,8 @@ def process_single_frame_for_emotion(image_file):
     This function is used for web-based camera functionality.
     """
     try:
+        print(f"Processing image file: {getattr(image_file, 'name', 'unknown')}, size: {getattr(image_file, 'size', 'unknown')} bytes")
+        
         # Import necessary modules locally to avoid startup issues
         import cv2
         import numpy as np
@@ -466,16 +468,22 @@ def process_single_frame_for_emotion(image_file):
         
         # Read the image file
         image_bytes = image_file.read()
+        print(f"Read {len(image_bytes)} bytes from image file")
+        
         image_array = np.frombuffer(image_bytes, dtype=np.uint8)
         frame = cv2.imdecode(image_array, cv2.IMREAD_COLOR)
         
         if frame is None:
+            print("Error: Could not decode image")
             return "Error: Could not decode image"
+        
+        print(f"Decoded frame with shape: {frame.shape}")
         
         # Load models if not already loaded
         try:
             net, emotion_net = initialize_models()
         except Exception as e:
+            print(f"Error loading models: {e}")
             return f"Error loading models: {str(e)}"
         
         # Get the frame dimensions
@@ -489,6 +497,8 @@ def process_single_frame_for_emotion(image_file):
         net.setInput(blob)
         detections = net.forward()
 
+        print(f"Found {detections.shape[2]} potential detections")
+
         # Loop over the detections
         for i in range(0, detections.shape[2]):
             # Extract the confidence (i.e., probability) associated with the prediction
@@ -496,6 +506,8 @@ def process_single_frame_for_emotion(image_file):
 
             # Filter out weak detections by ensuring the confidence is greater than a threshold
             if confidence > 0.5:
+                print(f"Processing detection {i} with confidence {confidence}")
+                
                 # Compute the (x, y)-coordinates of the bounding box for the face
                 box = detections[0, 0, i, 3:7] * np.array([w, h, w, h])
                 (startX, startY, endX, endY) = box.astype("int")
@@ -509,6 +521,7 @@ def process_single_frame_for_emotion(image_file):
 
                 # Ensure the ROI is valid
                 if face_roi.size == 0:
+                    print("Face ROI is empty, skipping")
                     continue
 
                 # Preprocess the face ROI for emotion recognition
@@ -524,16 +537,23 @@ def process_single_frame_for_emotion(image_file):
                     emotion_idx = np.argmax(emotion_preds)
                     emotion = emotion_labels[emotion_idx]
                     
+                    print(f"Detected emotion: {emotion}")
+                    
                     # Log the detected emotion
                     log_single_emotion(emotion)
                     
                     return emotion
                 except Exception as e:
                     print(f"Error in emotion prediction: {e}")
+                    import traceback
+                    traceback.print_exc()
                     continue
         
         # If no face was detected
+        print("No face detected in the image")
         return "No face detected"
     except Exception as e:
         print(f"Error processing single frame: {e}")
+        import traceback
+        traceback.print_exc()
         return f"Error: {str(e)}"

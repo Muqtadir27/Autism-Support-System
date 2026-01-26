@@ -269,10 +269,12 @@
                     if (data.success) {
                         emotionDisplay.textContent = `Detected: ${data.emotion || 'No face detected'}`;
                     } else {
-                        emotionDisplay.textContent = `Error: ${data.error || 'Processing failed'}`;
+                        emotionDisplay.textContent = `Processing Error: ${data.error || 'Processing failed'}`;
                     }
                 } else {
-                    emotionDisplay.textContent = 'Error processing frame';
+                    const errorData = await response.text();
+                    console.error('Response error:', response.status, errorData);
+                    emotionDisplay.textContent = `Server Error: ${response.status} - ${errorData.substring(0, 100)}`;
                 }
             } catch (error) {
                 console.error('Error sending frame:', error);
