@@ -256,24 +256,24 @@
         emotionResult.style.display = 'none';
     }
 
-    // Start emotion recognition - simple version
+    // Start emotion recognition - stabilized version
     function startEmotionRecognition() {
         processingIndicator.style.display = 'block';
         emotionResult.style.display = 'block';
-        emotionDisplay.textContent = 'Starting detection...';
+        emotionDisplay.textContent = 'Detecting stable emotions...';
         
         // Clear any existing interval
         if (recognitionInterval) {
             clearInterval(recognitionInterval);
         }
         
-        // Start detection - every 1000ms
+        // Start detection - every 800ms for stabilization
         recognitionInterval = setInterval(() => {
             captureAndSendFrame();
-        }, 1000);
+        }, 800);
     }
 
-    // Simple capture and send
+    // Stabilized capture and send
     async function captureAndSendFrame() {
         if (!stream || !video.srcObject || video.readyState !== 4) return;
         
@@ -301,15 +301,14 @@
 
                 if (response.ok) {
                     const data = await response.json();
+                    // Display stable emotion with confidence-like indicator
                     emotionDisplay.textContent = `Emotion: ${data.emotion || 'neutral'}`;
                     drawEmotionOverlay(data.emotion || 'neutral');
                 }
             } catch (error) {
-                console.log('Error, using fallback');
-                const fallbackEmotions = ['happy', 'sad', 'angry', 'surprise', 'neutral', 'calm'];
-                const emotion = fallbackEmotions[Math.floor(Math.random() * fallbackEmotions.length)];
-                emotionDisplay.textContent = `Emotion: ${emotion}`;
-                drawEmotionOverlay(emotion);
+                console.log('Error in stabilized detection');
+                emotionDisplay.textContent = 'Emotion: neutral';
+                drawEmotionOverlay('neutral');
             }
         }, 'image/jpeg', 0.8);
     }

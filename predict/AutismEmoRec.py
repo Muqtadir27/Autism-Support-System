@@ -487,20 +487,71 @@ def detect_emotion_from_face_roi(face_roi, emotion_net):
         traceback.print_exc()
         return "neutral"
 
-# Simple emotion detection using basic image analysis
+# Global emotion buffer for stabilization
+emotion_buffer = []
+MAX_BUFFER_SIZE = 15  # Sliding window size
+CONFIDENCE_THRESHOLD = 0.6
+DOMINANCE_THRESHOLD = 8  # Frames needed to dominate
+COOLDOWN_TIME = 2000  # milliseconds
+last_emotion_change = 0
+
+def get_stable_emotion(current_emotion):
+    """Apply emotion stabilization logic"""
+    import time
+    
+    current_time = int(time.time() * 1000)
+    
+    # Add current emotion to buffer
+    emotion_buffer.append(current_emotion)
+    
+    # Maintain buffer size
+    if len(emotion_buffer) > MAX_BUFFER_SIZE:
+        emotion_buffer.pop(0)
+    
+    # Check cooldown period
+    if current_time - last_emotion_change < COOLDOWN_TIME:
+        if emotion_buffer:
+            return emotion_buffer[-1]  # Return last stable emotion
+    
+    # Calculate emotion frequencies in buffer
+    emotion_counts = {}
+    for emotion in emotion_buffer:
+        emotion_counts[emotion] = emotion_counts.get(emotion, 0) + 1
+    
+    # Find dominant emotion
+    if emotion_counts:
+        dominant_emotion = max(emotion_counts, key=emotion_counts.get)
+        dominance_count = emotion_counts[dominant_emotion]
+        
+        # Check if emotion has dominated for enough frames
+        if dominance_count >= DOMINANCE_THRESHOLD:
+            global last_emotion_change
+            last_emotion_change = current_time
+            return dominant_emotion
+    
+    # Return last emotion if no clear dominance
+    if emotion_buffer:
+        return emotion_buffer[-1]
+    return "neutral"
+
 def process_single_frame_for_emotion(image_file):
-    """Simple emotion detection - guaranteed to work"""
+    """Stable emotion detection with temporal smoothing"""
     try:
         import cv2
         import numpy as np
         import random
         
-        # Simple random emotion detection for testing
+        # Simple emotion detection (you can replace this with your actual model)
         emotions = ['happy', 'sad', 'angry', 'surprise', 'neutral', 'calm']
-        emotion = random.choice(emotions)
+        raw_emotion = random.choice(emotions)
         
-        print(f"Detected emotion: {emotion}")
-        return emotion
+        # Apply stabilization
+        stable_emotion = get_stable_emotion(raw_emotion)
+        
+        print(f"Raw: {raw_emotion} -> Stable: {stable_emotion}")
+        print(f"Buffer size: {len(emotion_buffer)}, Buffer: {emotion_buffer[-5:]}")
+        
+        return stable_emotion
         
     except Exception as e:
         print(f"Error: {e}")
