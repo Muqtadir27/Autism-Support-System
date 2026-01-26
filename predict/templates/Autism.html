@@ -256,101 +256,27 @@
         emotionResult.style.display = 'none';
     }
 
-    // Start emotion recognition - final robust version
+    // Start emotion recognition - enhanced version
     function startEmotionRecognition() {
-        console.log('Starting emotion recognition');
         processingIndicator.style.display = 'block';
         emotionResult.style.display = 'block';
-        emotionDisplay.textContent = 'Detecting...';
+        emotionDisplay.textContent = 'Detecting emotions...';
         
-        // Clear any existing interval to prevent conflicts
+        // Clear any existing interval
         if (recognitionInterval) {
             clearInterval(recognitionInterval);
-            console.log('Cleared existing interval');
         }
         
-        // Start detection - every 800ms for good balance
-        recognitionInterval = setInterval(() => {
-            console.log('Capturing frame for emotion detection');
-            captureAndSendFrame();
-        }, 800);
-        
-        console.log('Emotion recognition started');
+        // Start detection - every 600ms for better responsiveness
+        recognitionInterval = setInterval(captureAndSendFrame, 600);
     }
 
-    // Function to draw emotion overlay on detection canvas
-    function drawEmotionOverlay(emotion) {
-        if (!detectionCtx || !detectionCanvas) {
-            console.log('Detection context or canvas not available');
-            return;
-        }
-        
-        console.log(`Drawing emotion overlay: ${emotion}`);
-        
-        // Clear previous drawings
-        detectionCtx.clearRect(0, 0, detectionCanvas.width, detectionCanvas.height);
-        
-        // Draw face rectangle and emotion label
-        detectionCtx.strokeStyle = '#00f2ff';
-        detectionCtx.lineWidth = 4;
-        detectionCtx.shadowColor = 'rgba(0, 242, 255, 0.8)';
-        detectionCtx.shadowBlur = 10;
-        
-        // Draw rectangle around face area (approximate center of video)
-        const rectX = detectionCanvas.width * 0.15;
-        const rectY = detectionCanvas.height * 0.15;
-        const rectWidth = detectionCanvas.width * 0.7;
-        const rectHeight = detectionCanvas.height * 0.7;
-        
-        detectionCtx.strokeRect(rectX, rectY, rectWidth, rectHeight);
-        
-        // Reset shadow for text
-        detectionCtx.shadowBlur = 0;
-        
-        // Draw emotion label background
-        detectionCtx.fillStyle = 'rgba(0, 242, 255, 0.8)';
-        detectionCtx.font = 'bold 20px Arial';
-        const text = emotion || 'No face detected';
-        const textMetrics = detectionCtx.measureText(text);
-        const textWidth = textMetrics.width;
-        const textHeight = 30;
-        
-        // Position text box above the face rectangle
-        const textX = rectX;
-        const textY = rectY - 15;
-        
-        detectionCtx.fillRect(textX, textY - textHeight, textWidth + 15, textHeight);
-        
-        // Draw emotion text with better contrast
-        detectionCtx.fillStyle = '#0a0e27';
-        detectionCtx.fillText(text, textX + 8, textY - 8);
-    }
-    
-    // Function to clear emotion overlay
-    function clearEmotionOverlay() {
-        console.log('Clearing emotion overlay');
-        if (detectionCtx && detectionCanvas) {
-            detectionCtx.clearRect(0, 0, detectionCanvas.width, detectionCanvas.height);
-        }
-    }
-    
-    // Robust frame capture and emotion detection
+    // Enhanced frame capture with all emotions support
     async function captureAndSendFrame() {
-        console.log('captureAndSendFrame called');
-        
-        // Validate video is ready
-        if (!stream || !video.srcObject || video.readyState !== 4) {
-            console.log('Video not ready');
-            return;
-        }
+        if (!stream || !video.srcObject || video.readyState !== 4) return;
         
         // Validate dimensions
-        if (video.videoWidth <= 0 || video.videoHeight <= 0) {
-            console.log('Invalid video dimensions');
-            return;
-        }
-        
-        console.log('Video ready:', video.videoWidth, 'x', video.videoHeight);
+        if (video.videoWidth <= 0 || video.videoHeight <= 0) return;
         
         // Create canvas and capture frame
         const canvas = document.createElement('canvas');
@@ -359,23 +285,12 @@
         const ctx = canvas.getContext('2d');
         ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
         
-        console.log('Frame captured');
-        
-        // Convert to blob and send
         canvas.toBlob(async function(blob) {
-            if (!blob) {
-                console.log('Failed to create blob');
-                return;
-            }
-            
-            console.log('Blob created, size:', blob.size);
-            
             const formData = new FormData();
             formData.append('image', blob, 'frame.jpg');
             
             try {
                 const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
-                console.log('CSRF token found, sending request');
                 
                 const response = await fetch('{% url "process_camera_frame" %}', {
                     method: 'POST',
@@ -384,25 +299,71 @@
                         'X-CSRFToken': csrfToken
                     }
                 });
-                
-                console.log('Response status:', response.status);
-                
+
                 if (response.ok) {
                     const data = await response.json();
-                    console.log('Received emotion:', data.emotion);
+                    // Display the detected emotion
                     emotionDisplay.textContent = data.emotion || 'neutral';
                     drawEmotionOverlay(data.emotion || 'neutral');
-                } else {
-                    console.log('Non-OK response:', response.status);
-                    emotionDisplay.textContent = 'neutral';
-                    drawEmotionOverlay('neutral');
                 }
             } catch (error) {
-                console.error('Error:', error);
                 emotionDisplay.textContent = 'neutral';
                 drawEmotionOverlay('neutral');
             }
-        }, 'image/jpeg', 0.8);
+        }, 'image/jpeg', 0.85);
+    }
+
+    // Enhanced emotion overlay with all emotions
+    function drawEmotionOverlay(emotion) {
+        if (!detectionCtx || !detectionCanvas) return;
+        
+        // Clear previous drawings
+        detectionCtx.clearRect(0, 0, detectionCanvas.width, detectionCanvas.height);
+        
+        // Draw face rectangle and emotion label
+        detectionCtx.strokeStyle = '#00f2ff';
+        detectionCtx.lineWidth = 3;
+        
+        // Draw rectangle around face area
+        const rectX = detectionCanvas.width * 0.2;
+        const rectY = detectionCanvas.height * 0.2;
+        const rectWidth = detectionCanvas.width * 0.6;
+        const rectHeight = detectionCanvas.height * 0.6;
+        
+        detectionCtx.strokeRect(rectX, rectY, rectWidth, rectHeight);
+        
+        // Draw emotion label with color coding
+        detectionCtx.fillStyle = getEmotionColor(emotion);
+        detectionCtx.font = 'bold 18px Arial';
+        const text = emotion || 'neutral';
+        const textMetrics = detectionCtx.measureText(text);
+        const textWidth = textMetrics.width;
+        const textHeight = 25;
+        
+        // Position text box above the face rectangle
+        const textX = rectX;
+        const textY = rectY - 10;
+        
+        detectionCtx.fillRect(textX, textY - textHeight, textWidth + 10, textHeight);
+        
+        // Draw emotion text
+        detectionCtx.fillStyle = 'white';
+        detectionCtx.fillText(text, textX + 5, textY - 5);
+    }
+    
+    // Color coding for different emotions
+    function getEmotionColor(emotion) {
+        const colors = {
+            'happy': 'rgba(255, 215, 0, 0.7)',    // Gold
+            'sad': 'rgba(70, 130, 180, 0.7)',     // Steel blue
+            'angry': 'rgba(255, 69, 0, 0.7)',     // Red-orange
+            'surprise': 'rgba(138, 43, 226, 0.7)', // Blue-violet
+            'fear': 'rgba(128, 0, 128, 0.7)',     // Purple
+            'disgust': 'rgba(34, 139, 34, 0.7)',  // Forest green
+            'calm': 'rgba(0, 191, 255, 0.7)',     // Deep sky blue
+            'neutral': 'rgba(105, 105, 105, 0.7)' // Dim gray
+        };
+        return colors[emotion] || colors['neutral'];
     }
 
     // Event listeners

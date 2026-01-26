@@ -489,7 +489,7 @@ def detect_emotion_from_face_roi(face_roi, emotion_net):
 
 # Simple emotion detection using basic image analysis
 def process_single_frame_for_emotion(image_file):
-    """Robust emotion detection - guaranteed to return an emotion"""
+    """Enhanced emotion detection with multiple emotions and ranges"""
     try:
         import cv2
         import numpy as np
@@ -509,16 +509,24 @@ def process_single_frame_for_emotion(image_file):
         brightness = np.mean(gray)
         contrast = np.std(gray)
         
-        # Simple but effective emotion mapping
-        if brightness > 170:  # Very bright
+        # Enhanced emotion mapping with specific ranges
+        if brightness > 180 and contrast > 40:  # Very bright + high contrast
             emotion = "happy"
-        elif brightness < 85:  # Very dark
-            emotion = "sad"
-        elif contrast > 55:  # High contrast
-            emotion = "angry"
-        elif contrast > 35:  # Medium contrast
+        elif brightness > 160 and contrast > 30:  # Bright + medium contrast
             emotion = "surprise"
-        else:  # Normal/mixed
+        elif brightness < 70 and contrast < 20:  # Very dark + low contrast
+            emotion = "sad"
+        elif brightness < 90 and contrast > 25:  # Dark + medium contrast
+            emotion = "fear"
+        elif contrast > 60:  # Very high contrast
+            emotion = "angry"
+        elif contrast > 45:  # High contrast
+            emotion = "disgust"
+        elif brightness > 140:  # Medium bright
+            emotion = "neutral"
+        elif brightness > 120:  # Slightly dim
+            emotion = "calm"
+        else:  # Default
             emotion = "neutral"
         
         print(f"Brightness: {brightness:.1f}, Contrast: {contrast:.1f} -> {emotion}")
@@ -526,4 +534,4 @@ def process_single_frame_for_emotion(image_file):
         
     except Exception as e:
         print(f"Error: {e}")
-        return "neutral"  # Always return a valid emotion
+        return "neutral"
