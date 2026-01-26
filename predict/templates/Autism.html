@@ -256,18 +256,19 @@
         emotionResult.style.display = 'none';
     }
 
-    // Start emotion recognition - ultra fast
+    // Start emotion recognition - fast detection
     function startEmotionRecognition() {
         processingIndicator.style.display = 'block';
         emotionResult.style.display = 'block';
-        emotionDisplay.textContent = 'Ready';
+        emotionDisplay.textContent = 'Detecting...';
         
-        // Ultra-fast detection every 500ms
+        // Clear any existing interval
         if (recognitionInterval) {
             clearInterval(recognitionInterval);
         }
         
-        recognitionInterval = setInterval(captureAndSendFrame, 500);
+        // Fast detection every 1 second
+        recognitionInterval = setInterval(captureAndSendFrame, 1000);
     }
 
     // Function to draw emotion overlay on detection canvas
@@ -326,7 +327,7 @@
         }
     }
     
-    // Ultra-fast capture and send
+    // Fast capture and send
     async function captureAndSendFrame() {
         if (!stream || !video.srcObject || video.readyState !== 4) return;
         
@@ -359,9 +360,9 @@
                     drawEmotionOverlay(data.emotion || 'neutral');
                 }
             } catch (error) {
-                // Silent fail - keep trying
+                // Keep trying
             }
-        }, 'image/jpeg', 0.9);
+        }, 'image/jpeg', 0.8);
     }
 
     // Event listeners

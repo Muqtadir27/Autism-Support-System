@@ -487,15 +487,14 @@ def detect_emotion_from_face_roi(face_roi, emotion_net):
         traceback.print_exc()
         return "neutral"
 
+# Simple emotion detection using basic image analysis
 def process_single_frame_for_emotion(image_file):
-    """
-    Ultra-fast emotion detection - instant analysis
-    """
+    """Fast emotion detection using simple image features"""
     try:
-        # Read image directly without complex processing
         import cv2
         import numpy as np
         
+        # Read and decode image
         image_bytes = image_file.read()
         image_array = np.frombuffer(image_bytes, dtype=np.uint8)
         frame = cv2.imdecode(image_array, cv2.IMREAD_COLOR)
@@ -503,24 +502,24 @@ def process_single_frame_for_emotion(image_file):
         if frame is None:
             return "neutral"
         
-        # Convert to grayscale instantly
+        # Convert to grayscale for analysis
         gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
         
-        # Ultra-fast feature extraction
+        # Simple feature extraction
         brightness = np.mean(gray)
         contrast = np.std(gray)
         
-        # Instant emotion mapping
-        if brightness > 180:  # Very bright
+        # Basic emotion mapping based on image properties
+        if brightness > 160 and contrast > 35:  # Bright and high contrast
             return "happy"
-        elif brightness < 80:  # Very dark
+        elif brightness < 90 and contrast < 25:  # Dark and low contrast
             return "sad"
-        elif contrast > 60:  # High contrast
+        elif contrast > 50:  # High contrast
             return "angry"
         elif contrast > 30:  # Medium contrast
             return "surprise"
         else:  # Default
             return "neutral"
             
-    except:
+    except Exception:
         return "neutral"
