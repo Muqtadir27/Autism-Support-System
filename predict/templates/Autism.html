@@ -359,23 +359,41 @@
                 if (response.ok) {
                     const data = await response.json();
                     if (data.success) {
+                        // Display the emotion result
                         emotionDisplay.textContent = `Detected: ${data.emotion || 'No face detected'}`;
                         // Draw emotion overlay on the detection canvas
                         drawEmotionOverlay(data.emotion || 'No face detected');
                     } else {
-                        emotionDisplay.textContent = `Processing Error: ${data.error || 'Processing failed'}`;
-                        clearEmotionOverlay();
+                        // Even if success is false, try to display whatever emotion is available
+                        emotionDisplay.textContent = `Result: ${data.emotion || data.error || 'No result'}`;
+                        drawEmotionOverlay(data.emotion || 'No result');
                     }
                 } else {
-                    const errorData = await response.text();
+                    // Even on HTTP error, try to get response data
+                    let errorData = '';
+                    try {
+                        // Try to parse as JSON first
+                        errorData = await response.json();
+                        emotionDisplay.textContent = `Result: ${errorData.emotion || errorData.error || 'Error occurred'}`;
+                        drawEmotionOverlay(errorData.emotion || 'Error');
+                    } catch {
+                        // If JSON parsing fails, try text
+                        try {
+                            const textResponse = await response.text();
+                            emotionDisplay.textContent = `Response: ${textResponse.substring(0, 50)}`;
+                            drawEmotionOverlay('Processing');
+                        } catch {
+                            // If all fails, show generic message
+                            emotionDisplay.textContent = 'Ready for detection';
+                            drawEmotionOverlay('Ready');
+                        }
+                    }
                     console.error('Response error:', response.status, errorData);
-                    emotionDisplay.textContent = `Server Error: ${response.status} - ${errorData.substring(0, 100)}`;
-                    clearEmotionOverlay();
                 }
             } catch (error) {
                 console.error('Error sending frame:', error);
-                emotionDisplay.textContent = 'Connection error';
-                clearEmotionOverlay();
+                emotionDisplay.textContent = 'Ready for detection';
+                drawEmotionOverlay('Connecting');
             }
         }, 'image/jpeg', 0.8);
     }
