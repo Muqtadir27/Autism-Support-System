@@ -1,8 +1,3 @@
-# Railway Configuration File
-
-[build]
-builder = "heroku/buildpacks:20"
-
 [deploy]
 startCommand = "gunicorn mini.wsgi:application --bind 0.0.0.0:$PORT"
 restartPolicyType = "ON_FAILURE"

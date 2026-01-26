@@ -100,10 +100,10 @@ This guide will walk you through deploying the Autism Support System on Railway,
 ## Configuration Details
 
 ### Railway Configuration (`railway.toml`)
-- Uses Heroku buildpacks for Python applications
-- Sets up the proper start command for the Django application
+- Sets up the proper start command for the Django application using Gunicorn
 - Configures restart policies for reliability
 - Sets environment variables needed for deployment
+- Does not specify a buildpack to allow Railway to auto-detect the Python application
 
 ### Build Process
 - Installs dependencies from `requirements.txt`

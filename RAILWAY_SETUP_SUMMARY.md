@@ -6,10 +6,10 @@ This document summarizes all the changes made to prepare the Autism Support Syst
 ## Files Created
 
 1. **`railway.toml`** - Railway configuration file
-   - Configures the build process using Heroku buildpacks
-   - Sets up the start command for the Django application
+   - Sets up the start command for the Django application using Gunicorn
    - Defines environment variables needed for deployment
    - Configures restart policies for reliability
+   - Does not specify a buildpack to allow Railway to auto-detect the Python application
 
 2. **`.railwayignore`** - Railway ignore file
    - Specifies files and directories to exclude from deployment
