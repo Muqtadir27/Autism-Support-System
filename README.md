@@ -4,7 +4,7 @@ An AI-powered emotion recognition system designed to assist individuals with aut
 
 ## Features
 
-- **Visual Emotion Recognition**: Real-time facial emotion detection using computer vision
+- **Visual Emotion Recognition**: Real-time facial emotion detection using computer vision *(requires local installation with camera)*
 - **Vocal Expression Interpretation**: Speech-to-text emotion analysis with supportive responses
 - **Emotional Log Analytics**: Data visualization and pattern recognition for personalized insights
 - **Futuristic AI Interface**: Modern, accessible design with glassmorphism and neon aesthetics
@@ -129,7 +129,7 @@ Required environment variables for production:
 
 ## Usage
 
-- **VISUAL_EMO**: Click "INITIALIZE SCAN" to start facial emotion recognition
+- **VISUAL_EMO**: Click "INITIALIZE SCAN" to start facial emotion recognition *(requires local installation with a connected camera - web deployment cannot display desktop GUI windows)*
 - **VOCAL_INT**: Click "ACTIVATE COMMS" and then the microphone icon to start voice emotion analysis
 - **LOG_ANALYTICS**: View emotion analytics and download logs
 

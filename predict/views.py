@@ -63,6 +63,8 @@ def run_detection(request):
                 'The system will detect your emotion in real-time.',
                 'Press "q" in the camera window to stop detection.',
                 'Download the Emotion log file from below when done.',
+                'Note: This feature requires running the application locally with a connected camera.',
+                'In web deployment, the camera window cannot be displayed in the browser.'
             ]
         }
         return render(request, 'Autism.html', context)

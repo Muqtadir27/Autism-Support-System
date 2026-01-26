@@ -73,6 +73,17 @@
         <h2 class="glow-text royal-border" style="display: inline-block; padding: 10px 30px;">[VISUAL_SCAN_INITIALIZED]</h2>
         <p class="gold-text" style="margin-top: 20px; font-size: 1.2rem;">{{ status }}</p>
         
+        <div class="alert-warning" style="background: rgba(255, 165, 0, 0.1); border: 1px solid #ffa500; border-radius: 10px; padding: 20px; margin: 20px 0;">
+            <h3 style="color: #ffa500; margin-top: 0;">⚠️ Important Deployment Note</h3>
+            <p>This emotion recognition system requires direct camera access and desktop GUI capabilities. In a web deployment environment, the camera window cannot be displayed in the browser.</p>
+            <p><strong>To use this feature:</strong></p>
+            <ul style="text-align: left; margin-left: 20px;">
+                <li>Download the application code locally</li>
+                <li>Run it on your local machine with Python/Django</li>
+                <li>Ensure you have a camera connected to your computer</li>
+            </ul>
+        </div>
+
         <div class="instruction-list">
             {% for instruction in instructions %}
                 <li class="glow-text" style="opacity: 0.9;">{{ instruction }}</li>
