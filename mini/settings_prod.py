@@ -30,12 +30,21 @@ if not DEBUG:
 # Database configuration for production
 import dj_database_url
 
+# Use database from environment variable, fallback to SQLite
 if 'DATABASE_URL' in os.environ:
     DATABASES['default'] = dj_database_url.config(
         default=os.environ.get('DATABASE_URL'),
         conn_max_age=600,
         conn_health_checks=True,
     )
+else:
+    # Fallback to SQLite for local development
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
+    }
 
 # Media files for production
 MEDIA_URL = '/media/'

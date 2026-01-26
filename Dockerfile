@@ -38,4 +38,4 @@ RUN chmod +x startup.sh
 EXPOSE $PORT
 
 # Run the application
-CMD ./startup.sh
+CMD ["./startup.sh"]
