@@ -20,7 +20,7 @@ RUN apt-get update \
         libglib2.0-dev \
         libgtk2.0-dev \
         pkg-config \
-        libgl1-mesa-glx \
+        libglx-mesa0 \
         libgfortran5 \
     && rm -rf /var/lib/apt/lists/*
 
