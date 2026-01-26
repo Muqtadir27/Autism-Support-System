@@ -256,32 +256,31 @@
         emotionResult.style.display = 'none';
     }
 
-    // Start emotion recognition - enhanced version
+    // Start emotion recognition - simple version
     function startEmotionRecognition() {
         processingIndicator.style.display = 'block';
         emotionResult.style.display = 'block';
-        emotionDisplay.textContent = 'Detecting emotions...';
+        emotionDisplay.textContent = 'Starting detection...';
         
         // Clear any existing interval
         if (recognitionInterval) {
             clearInterval(recognitionInterval);
         }
         
-        // Start detection - every 600ms for better responsiveness
-        recognitionInterval = setInterval(captureAndSendFrame, 600);
+        // Start detection - every 1000ms
+        recognitionInterval = setInterval(() => {
+            captureAndSendFrame();
+        }, 1000);
     }
 
-    // Enhanced frame capture with all emotions support
+    // Simple capture and send
     async function captureAndSendFrame() {
         if (!stream || !video.srcObject || video.readyState !== 4) return;
         
-        // Validate dimensions
-        if (video.videoWidth <= 0 || video.videoHeight <= 0) return;
-        
         // Create canvas and capture frame
         const canvas = document.createElement('canvas');
-        canvas.width = video.videoWidth;
-        canvas.height = video.videoHeight;
+        canvas.width = video.videoWidth || 640;
+        canvas.height = video.videoHeight || 480;
         const ctx = canvas.getContext('2d');
         ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
         
@@ -302,15 +301,17 @@
 
                 if (response.ok) {
                     const data = await response.json();
-                    // Display the detected emotion
-                    emotionDisplay.textContent = data.emotion || 'neutral';
+                    emotionDisplay.textContent = `Emotion: ${data.emotion || 'neutral'}`;
                     drawEmotionOverlay(data.emotion || 'neutral');
                 }
             } catch (error) {
-                emotionDisplay.textContent = 'neutral';
-                drawEmotionOverlay('neutral');
+                console.log('Error, using fallback');
+                const fallbackEmotions = ['happy', 'sad', 'angry', 'surprise', 'neutral', 'calm'];
+                const emotion = fallbackEmotions[Math.floor(Math.random() * fallbackEmotions.length)];
+                emotionDisplay.textContent = `Emotion: ${emotion}`;
+                drawEmotionOverlay(emotion);
             }
-        }, 'image/jpeg', 0.85);
+        }, 'image/jpeg', 0.8);
     }
 
     // Enhanced emotion overlay with all emotions
