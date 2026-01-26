@@ -135,7 +135,10 @@
         
         <div class="camera-container">
             <!-- Camera Interface -->
-            <video id="videoElement" autoplay playsinline></video>
+            <div id="videoContainer" style="position: relative; display: inline-block;">
+                <video id="videoElement" autoplay playsinline style="display: block;"></video>
+                <canvas id="detectionCanvas" style="position: absolute; top: 0; left: 0; pointer-events: none; display: none;"></canvas>
+            </div>
             
             <div class="camera-controls">
                 <button id="startCameraBtn" class="camera-btn">START CAMERA</button>
@@ -171,6 +174,9 @@
 <script>
     // Camera functionality
     let video = document.getElementById('videoElement');
+    let videoContainer = document.getElementById('videoContainer');
+    let detectionCanvas = document.getElementById('detectionCanvas');
+    let detectionCtx = null;
     let startBtn = document.getElementById('startCameraBtn');
     let stopBtn = document.getElementById('stopCameraBtn');
     let processingIndicator = document.getElementById('processingIndicator');
@@ -193,6 +199,17 @@
             
             video.srcObject = stream;
             video.style.display = 'block';
+            
+            // Show detection canvas when video is ready
+            detectionCanvas.style.display = 'block';
+            
+            // Update detection canvas size when video metadata loads
+            video.onloadedmetadata = function() {
+                detectionCanvas.width = video.videoWidth;
+                detectionCanvas.height = video.videoHeight;
+                detectionCtx = detectionCanvas.getContext('2d');
+            };
+            
             startBtn.style.display = 'none';
             stopBtn.style.display = 'inline-block';
             
@@ -218,6 +235,7 @@
         }
         
         video.style.display = 'none';
+        detectionCanvas.style.display = 'none';
         startBtn.style.display = 'inline-block';
         stopBtn.style.display = 'none';
         processingIndicator.style.display = 'none';
@@ -233,6 +251,51 @@
         recognitionInterval = setInterval(captureAndSendFrame, 2000); // Every 2 seconds
     }
 
+    // Function to draw emotion overlay on detection canvas
+    function drawEmotionOverlay(emotion) {
+        if (!detectionCtx || !detectionCanvas) return;
+        
+        // Clear previous drawings
+        detectionCtx.clearRect(0, 0, detectionCanvas.width, detectionCanvas.height);
+        
+        // Draw face rectangle and emotion label
+        detectionCtx.strokeStyle = '#00f2ff';
+        detectionCtx.lineWidth = 3;
+        
+        // Draw rectangle around face area (approximate center of video)
+        const rectX = detectionCanvas.width * 0.1;
+        const rectY = detectionCanvas.height * 0.1;
+        const rectWidth = detectionCanvas.width * 0.8;
+        const rectHeight = detectionCanvas.height * 0.8;
+        
+        detectionCtx.strokeRect(rectX, rectY, rectWidth, rectHeight);
+        
+        // Draw emotion label background
+        detectionCtx.fillStyle = 'rgba(0, 242, 255, 0.7)';
+        detectionCtx.font = 'bold 18px Arial';
+        const text = emotion || 'No face detected';
+        const textMetrics = detectionCtx.measureText(text);
+        const textWidth = textMetrics.width;
+        const textHeight = 25;
+        
+        // Position text box above the face rectangle
+        const textX = rectX;
+        const textY = rectY - 10;
+        
+        detectionCtx.fillRect(textX, textY - textHeight, textWidth + 10, textHeight);
+        
+        // Draw emotion text
+        detectionCtx.fillStyle = 'white';
+        detectionCtx.fillText(text, textX + 5, textY - 5);
+    }
+    
+    // Function to clear emotion overlay
+    function clearEmotionOverlay() {
+        if (detectionCtx && detectionCanvas) {
+            detectionCtx.clearRect(0, 0, detectionCanvas.width, detectionCanvas.height);
+        }
+    }
+    
     // Capture frame and send to backend
     async function captureAndSendFrame() {
         if (!stream || !video.srcObject || video.readyState !== 4) return;
@@ -268,17 +331,22 @@
                     const data = await response.json();
                     if (data.success) {
                         emotionDisplay.textContent = `Detected: ${data.emotion || 'No face detected'}`;
+                        // Draw emotion overlay on the detection canvas
+                        drawEmotionOverlay(data.emotion || 'No face detected');
                     } else {
                         emotionDisplay.textContent = `Processing Error: ${data.error || 'Processing failed'}`;
+                        clearEmotionOverlay();
                     }
                 } else {
                     const errorData = await response.text();
                     console.error('Response error:', response.status, errorData);
                     emotionDisplay.textContent = `Server Error: ${response.status} - ${errorData.substring(0, 100)}`;
+                    clearEmotionOverlay();
                 }
             } catch (error) {
                 console.error('Error sending frame:', error);
                 emotionDisplay.textContent = 'Connection error';
+                clearEmotionOverlay();
             }
         }, 'image/jpeg', 0.8);
     }
