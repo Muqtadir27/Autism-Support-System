@@ -31,8 +31,11 @@ COPY . .
 ENV CONTAINER_BUILD=1
 RUN python manage.py collectstatic --noinput --settings=mini.settings
 
+# Make startup script executable
+RUN chmod +x startup.sh
+
 # Expose the port the app runs on
 EXPOSE $PORT
 
 # Run the application
-CMD gunicorn mini.wsgi:application --bind 0.0.0.0:$PORT
+CMD ./startup.sh
