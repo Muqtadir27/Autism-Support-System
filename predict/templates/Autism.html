@@ -235,10 +235,13 @@
 
     // Capture frame and send to backend
     async function captureAndSendFrame() {
-        if (!stream || !video.srcObject) return;
+        if (!stream || !video.srcObject || video.readyState !== 4) return;
         
         // Create canvas to capture frame
         const canvas = document.createElement('canvas');
+        // Check if video has valid dimensions before drawing
+        if (video.videoWidth <= 0 || video.videoHeight <= 0) return;
+        
         canvas.width = video.videoWidth;
         canvas.height = video.videoHeight;
         const ctx = canvas.getContext('2d');
@@ -248,12 +251,17 @@
         canvas.toBlob(async function(blob) {
             const formData = new FormData();
             formData.append('image', blob, 'frame.jpg');
-            formData.append('csrfmiddlewaretoken', document.querySelector('[name=csrfmiddlewaretoken]').value);
-
+            
             try {
+                // Get CSRF token for headers
+                const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+                
                 const response = await fetch('{% url "process_camera_frame" %}', {
                     method: 'POST',
-                    body: formData
+                    body: formData,
+                    headers: {
+                        'X-CSRFToken': csrfToken
+                    }
                 });
 
                 if (response.ok) {
