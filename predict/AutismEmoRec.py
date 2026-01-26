@@ -422,3 +422,87 @@ def Autism_emotion_recognition():
             return emotion_log
         else:
             return []
+
+
+def process_single_frame_for_emotion(image_file):
+    """
+    Process a single image file to detect emotion.
+    This function is used for web-based camera functionality.
+    """
+    try:
+        # Import necessary modules locally to avoid startup issues
+        import cv2
+        import numpy as np
+        from io import BytesIO
+        from PIL import Image
+        
+        # Read the image file
+        image_bytes = image_file.read()
+        image_array = np.frombuffer(image_bytes, dtype=np.uint8)
+        frame = cv2.imdecode(image_array, cv2.IMREAD_COLOR)
+        
+        if frame is None:
+            return "Error: Could not decode image"
+        
+        # Load models if not already loaded
+        try:
+            net, emotion_net = initialize_models()
+        except Exception as e:
+            return f"Error loading models: {str(e)}"
+        
+        # Get the frame dimensions
+        (h, w) = frame.shape[:2]
+
+        # Preprocess the frame: resize and create a blob
+        blob = cv2.dnn.blobFromImage(cv2.resize(frame, (300, 300)), 1.0,
+                                     (300, 300), (104.0, 177.0, 123.0))
+
+        # Pass the blob through the network and obtain the detections
+        net.setInput(blob)
+        detections = net.forward()
+
+        # Loop over the detections
+        for i in range(0, detections.shape[2]):
+            # Extract the confidence (i.e., probability) associated with the prediction
+            confidence = detections[0, 0, i, 2]
+
+            # Filter out weak detections by ensuring the confidence is greater than a threshold
+            if confidence > 0.5:
+                # Compute the (x, y)-coordinates of the bounding box for the face
+                box = detections[0, 0, i, 3:7] * np.array([w, h, w, h])
+                (startX, startY, endX, endY) = box.astype("int")
+
+                # Ensure the bounding box is within the frame dimensions
+                startX, startY = max(0, startX), max(0, startY)
+                endX, endY = min(w, endX), min(h, endY)
+
+                # Extract the face ROI (Region of Interest)
+                face_roi = frame[startY:endY, startX:endX]
+
+                # Ensure the ROI is valid
+                if face_roi.size == 0:
+                    continue
+
+                # Preprocess the face ROI for emotion recognition
+                face_roi_resized = cv2.resize(face_roi, (64, 64))
+                face_roi_gray = cv2.cvtColor(face_roi_resized, cv2.COLOR_BGR2GRAY)
+                face_roi_normalized = face_roi_gray.astype("float") / 255.0
+                face_roi_expanded = np.expand_dims(face_roi_normalized, axis=-1)
+                face_roi_batch = np.expand_dims(face_roi_expanded, axis=0)
+
+                try:
+                    # Predict emotion using HDF5 model
+                    emotion_preds = emotion_net.predict(face_roi_batch, verbose=0)
+                    emotion_idx = np.argmax(emotion_preds)
+                    emotion = emotion_labels[emotion_idx]
+                    
+                    return emotion
+                except Exception as e:
+                    print(f"Error in emotion prediction: {e}")
+                    continue
+        
+        # If no face was detected
+        return "No face detected"
+    except Exception as e:
+        print(f"Error processing single frame: {e}")
+        return f"Error: {str(e)}"

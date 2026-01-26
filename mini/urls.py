@@ -40,6 +40,10 @@ def download_emotion_log(request):
 def emotion_log_dashboard(request):
     view_func = import_string('predict.views.emotion_log_dashboard')
     return view_func(request)
+
+def process_camera_frame(request):
+    view_func = import_string('predict.views.process_camera_frame')
+    return view_func(request)
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('',home,name='Home'),
@@ -51,5 +55,6 @@ urlpatterns = [
     path('download_emotion_log/', download_emotion_log, name='download_emotion_log'),
     path('Emotion_Detection_Hand/', run_detection, name='run_detection'),
     path('log_dashboard/', emotion_log_dashboard, name='log_dashboard'),
+    path('predict/process_camera_frame/', process_camera_frame, name='process_camera_frame'),
 ]
 

@@ -52,6 +52,65 @@
         left: 0;
         color: var(--electric-blue);
     }
+    
+    /* New styles for camera interface */
+    .camera-container {
+        width: 100%;
+        max-width: 800px;
+        margin: 20px auto;
+        text-align: center;
+    }
+    #videoElement {
+        width: 100%;
+        max-width: 640px;
+        height: auto;
+        border: 2px solid var(--electric-blue);
+        box-shadow: 0 0 20px rgba(0, 242, 255, 0.3);
+        display: none;
+    }
+    .camera-controls {
+        margin: 20px 0;
+    }
+    .camera-btn {
+        background: transparent;
+        border: 2px solid var(--electric-blue);
+        color: var(--electric-blue);
+        padding: 12px 24px;
+        border-radius: 8px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        cursor: pointer;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        font-family: 'Courier New', monospace;
+        margin: 0 10px;
+    }
+    .camera-btn:hover {
+        background: var(--electric-blue);
+        color: #0a0e27;
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px var(--electric-blue);
+    }
+    .camera-btn.stop {
+        border-color: #ff3131;
+        color: #ff3131;
+    }
+    .camera-btn.stop:hover {
+        background: #ff3131;
+        color: white;
+    }
+    #emotionResult {
+        margin-top: 20px;
+        padding: 15px;
+        background: rgba(0, 242, 255, 0.1);
+        border-radius: 10px;
+        display: none;
+    }
+    .processing-indicator {
+        display: none;
+        color: var(--electric-blue);
+        font-weight: bold;
+    }
 </style>
 {% endblock meta %}
 
@@ -73,15 +132,23 @@
         <h2 class="glow-text royal-border" style="display: inline-block; padding: 10px 30px;">[VISUAL_SCAN_INITIALIZED]</h2>
         <p class="gold-text" style="margin-top: 20px; font-size: 1.2rem;">{{ status }}</p>
         
-        <div class="alert-warning" style="background: rgba(255, 165, 0, 0.1); border: 1px solid #ffa500; border-radius: 10px; padding: 20px; margin: 20px 0;">
-            <h3 style="color: #ffa500; margin-top: 0;">⚠️ Important Deployment Note</h3>
-            <p>This emotion recognition system requires direct camera access and desktop GUI capabilities. In a web deployment environment, the camera window cannot be displayed in the browser.</p>
-            <p><strong>To use this feature:</strong></p>
-            <ul style="text-align: left; margin-left: 20px;">
-                <li>Download the application code locally</li>
-                <li>Run it on your local machine with Python/Django</li>
-                <li>Ensure you have a camera connected to your computer</li>
-            </ul>
+        <div class="camera-container">
+            <!-- Camera Interface -->
+            <video id="videoElement" autoplay playsinline></video>
+            
+            <div class="camera-controls">
+                <button id="startCameraBtn" class="camera-btn">START CAMERA</button>
+                <button id="stopCameraBtn" class="camera-btn stop" style="display: none;">STOP CAMERA</button>
+            </div>
+            
+            <div id="processingIndicator" class="processing-indicator">
+                Processing emotions...
+            </div>
+            
+            <div id="emotionResult" class="glow-text">
+                <h3>Detecting emotions...</h3>
+                <p id="emotionDisplay">Waiting for emotion detection...</p>
+            </div>
         </div>
 
         <div class="instruction-list">
@@ -99,4 +166,114 @@
         </div>
     </div>
 </div>
+
+<script>
+    // Camera functionality
+    let video = document.getElementById('videoElement');
+    let startBtn = document.getElementById('startCameraBtn');
+    let stopBtn = document.getElementById('stopCameraBtn');
+    let processingIndicator = document.getElementById('processingIndicator');
+    let emotionResult = document.getElementById('emotionResult');
+    let emotionDisplay = document.getElementById('emotionDisplay');
+    let stream = null;
+    let recognitionInterval = null;
+
+    // Start camera
+    async function startCamera() {
+        try {
+            stream = await navigator.mediaDevices.getUserMedia({ 
+                video: { 
+                    width: 640, 
+                    height: 480,
+                    facingMode: 'user' 
+                }, 
+                audio: false 
+            });
+            
+            video.srcObject = stream;
+            video.style.display = 'block';
+            startBtn.style.display = 'none';
+            stopBtn.style.display = 'inline-block';
+            
+            // Start emotion recognition
+            startEmotionRecognition();
+        } catch (err) {
+            console.error("Error accessing camera:", err);
+            alert("Could not access camera: " + err.message);
+        }
+    }
+
+    // Stop camera
+    function stopCamera() {
+        if (stream) {
+            const tracks = stream.getTracks();
+            tracks.forEach(track => track.stop());
+            stream = null;
+        }
+        
+        if (recognitionInterval) {
+            clearInterval(recognitionInterval);
+            recognitionInterval = null;
+        }
+        
+        video.style.display = 'none';
+        startBtn.style.display = 'inline-block';
+        stopBtn.style.display = 'none';
+        processingIndicator.style.display = 'none';
+        emotionResult.style.display = 'none';
+    }
+
+    // Start emotion recognition
+    function startEmotionRecognition() {
+        processingIndicator.style.display = 'block';
+        emotionResult.style.display = 'block';
+        
+        // Call backend API to recognize emotions periodically
+        recognitionInterval = setInterval(captureAndSendFrame, 2000); // Every 2 seconds
+    }
+
+    // Capture frame and send to backend
+    async function captureAndSendFrame() {
+        if (!stream || !video.srcObject) return;
+        
+        // Create canvas to capture frame
+        const canvas = document.createElement('canvas');
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+        
+        // Convert to blob and send to backend
+        canvas.toBlob(async function(blob) {
+            const formData = new FormData();
+            formData.append('image', blob, 'frame.jpg');
+            formData.append('csrfmiddlewaretoken', document.querySelector('[name=csrfmiddlewaretoken]').value);
+
+            try {
+                const response = await fetch('/predict/process_camera_frame/', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.success) {
+                        emotionDisplay.textContent = `Detected: ${data.emotion || 'No face detected'}`;
+                    } else {
+                        emotionDisplay.textContent = `Error: ${data.error || 'Processing failed'}`;
+                    }
+                } else {
+                    emotionDisplay.textContent = 'Error processing frame';
+                }
+            } catch (error) {
+                console.error('Error sending frame:', error);
+                emotionDisplay.textContent = 'Connection error';
+            }
+        }, 'image/jpeg', 0.8);
+    }
+
+    // Event listeners
+    startBtn.addEventListener('click', startCamera);
+    stopBtn.addEventListener('click', stopCamera);
+</script>
 {% endblock body %}

@@ -104,3 +104,25 @@ def download_emotion_log(request):
         return FileResponse(open(log_file, 'rb'), as_attachment=True, filename='emotion_log.xlsx')
     else:
         raise Http404("Log file not found")
+
+def process_camera_frame(request):
+    if request.method == 'POST':
+        try:
+            # Get the uploaded image
+            image_file = request.FILES.get('image')
+            if not image_file:
+                return JsonResponse({'success': False, 'error': 'No image provided'})
+            
+            # Process the image to detect emotion
+            # Import the function here to avoid startup issues
+            from .AutismEmoRec import process_single_frame_for_emotion
+            
+            # Call the emotion detection function
+            emotion = process_single_frame_for_emotion(image_file)
+            
+            return JsonResponse({'success': True, 'emotion': emotion})
+        except Exception as e:
+            print(f"Error processing camera frame: {e}")
+            return JsonResponse({'success': False, 'error': str(e)})
+    else:
+        return JsonResponse({'success': False, 'error': 'Only POST requests allowed'})
