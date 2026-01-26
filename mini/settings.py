@@ -141,7 +141,12 @@ STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')] if DEBUG else []
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles_build', 'static')
 
 # WhiteNoise settings
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+# Use ManifestStaticFilesStorage during build, CompressedManifestStaticFilesStorage in production
+import os
+if os.environ.get('RAILWAY_ENVIRONMENT') or os.environ.get('CONTAINER_BUILD'):
+    STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.ManifestStaticFilesStorage'
+else:
+    STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 
 # Media files

@@ -27,8 +27,9 @@ RUN pip install opencv-contrib-python==4.9.0.80
 # Copy the rest of the application code
 COPY . .
 
-# Make sure static files are collected
-RUN python manage.py collectstatic --noinput
+# Set environment variable to use different static files storage during build
+ENV CONTAINER_BUILD=1
+RUN python manage.py collectstatic --noinput --settings=mini.settings
 
 # Expose the port the app runs on
 EXPOSE $PORT
