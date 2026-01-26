@@ -5,9 +5,18 @@ import threading
 import subprocess
 import sys
 import pandas as pd
-from .AutismEmoRec import Autism_emotion_recognition
-from .facehand import emotion_and_gesture_detection
-from .vocal_emo import vocal_expression_interpretation
+# Import functions (these will be imported when needed to avoid startup issues)
+def get_autism_emotion_recognition():
+    from .AutismEmoRec import Autism_emotion_recognition
+    return Autism_emotion_recognition
+
+def get_emotion_and_gesture_detection():
+    from .facehand import emotion_and_gesture_detection
+    return emotion_and_gesture_detection
+
+def get_vocal_expression_interpretation():
+    from .vocal_emo import vocal_expression_interpretation
+    return vocal_expression_interpretation
 
 def predict(request):
     return render(request, 'predict.html')
@@ -15,7 +24,8 @@ def predict(request):
 def run_detection(request):
     if request.method == 'POST' and 'emotion_and_gesture_button' in request.POST:
         # Vocal Expression Interpretation
-        thread = threading.Thread(target=vocal_expression_interpretation)
+        vocal_func = get_vocal_expression_interpretation()
+        thread = threading.Thread(target=vocal_func)
         thread.start()
         
         context = {
@@ -32,24 +42,9 @@ def run_detection(request):
     elif request.method == 'POST' and 'autism_emotion_recognition_button' in request.POST:
         # Start Autism emotion recognition in a separate process so OpenCV window displays properly
         try:
-            # Get the path to the script
-            current_dir = os.path.dirname(os.path.abspath(__file__))
-            script_path = os.path.join(current_dir, 'run_emotion_recognition.py')
-            
-            # Verify script exists
-            if not os.path.exists(script_path):
-                raise FileNotFoundError(f"Script not found: {script_path}")
-            
-            # Get Python executable from the virtual environment or system
-            python_exe = sys.executable
-            
-            print(f"Starting emotion recognition process...")
-            print(f"Python: {python_exe}")
-            print(f"Script: {script_path}")
-            print(f"Working dir: {os.path.dirname(current_dir)}")
-            
             # Start the process - use threading instead (simpler and works better for GUI)
-            thread = threading.Thread(target=Autism_emotion_recognition, daemon=False)
+            autism_func = get_autism_emotion_recognition()
+            thread = threading.Thread(target=autism_func, daemon=False)
             thread.start()
             print(f"Emotion recognition thread started")
         except Exception as e:
