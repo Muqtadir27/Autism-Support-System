@@ -5,6 +5,8 @@ import threading
 import subprocess
 import sys
 import pandas as pd
+# Note: OpenCV imports are deferred to avoid startup issues
+# See get_autism_emotion_recognition(), get_emotion_and_gesture_detection(), get_vocal_expression_interpretation() functions
 # Import functions (these will be imported when needed to avoid startup issues)
 def get_autism_emotion_recognition():
     from .AutismEmoRec import Autism_emotion_recognition

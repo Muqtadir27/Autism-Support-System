@@ -1,4 +1,6 @@
-import cv2
+# NOTE: OpenCV imports are deferred to avoid startup issues on servers without GUI support
+# All cv2 imports happen inside functions only when needed
+
 import numpy as np
 import os
 from tensorflow.keras.models import load_model # type: ignore

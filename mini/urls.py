@@ -22,7 +22,24 @@ from core.views import home
 from about.views import about,download_pdf
 from team.views import team
 from contact.views import contact
-from predict.views import predict,run_detection,download_emotion_log,emotion_log_dashboard
+# Lazy imports to avoid OpenCV startup issues
+from django.utils.module_loading import import_string
+
+def predict(request):
+    view_func = import_string('predict.views.predict')
+    return view_func(request)
+
+def run_detection(request):
+    view_func = import_string('predict.views.run_detection')
+    return view_func(request)
+
+def download_emotion_log(request):
+    view_func = import_string('predict.views.download_emotion_log')
+    return view_func(request)
+
+def emotion_log_dashboard(request):
+    view_func = import_string('predict.views.emotion_log_dashboard')
+    return view_func(request)
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('',home,name='Home'),
