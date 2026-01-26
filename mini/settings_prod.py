@@ -24,8 +24,12 @@ if not DEBUG:
     SECURE_REDIRECT_EXEMPT = []
     SECURE_SSL_REDIRECT = False  # Railway handles SSL
     SESSION_COOKIE_SECURE = True
-    CSRF_COOKIE_SECURE = True
+    # Don't set CSRF_COOKIE_SECURE = True for Railway as it terminates SSL at the edge
+    # CSRF_COOKIE_SECURE = True
     X_FRAME_OPTIONS = 'DENY'
+
+# Trust X-Forwarded-Proto header to determine if request is secure
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 # Database configuration for production
 import dj_database_url
