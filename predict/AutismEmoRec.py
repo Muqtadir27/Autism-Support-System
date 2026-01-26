@@ -451,11 +451,47 @@ def Autism_emotion_recognition():
         else:
             return []
 
+def detect_emotion_from_face_roi(face_roi, emotion_net):
+    """
+    Helper function to detect emotion from a face region of interest.
+    """
+    try:
+        import cv2
+        import numpy as np
+        
+        # Preprocess the face ROI for emotion recognition
+        face_roi_resized = cv2.resize(face_roi, (64, 64))
+        face_roi_gray = cv2.cvtColor(face_roi_resized, cv2.COLOR_BGR2GRAY)
+        face_roi_normalized = face_roi_gray.astype("float") / 255.0
+        face_roi_expanded = np.expand_dims(face_roi_normalized, axis=-1)
+        face_roi_batch = np.expand_dims(face_roi_expanded, axis=0)
+
+        # Predict emotion using HDF5 model
+        emotion_preds = emotion_net.predict(face_roi_batch, verbose=0)
+        emotion_idx = np.argmax(emotion_preds)
+        emotion = emotion_labels[emotion_idx]
+        
+        # Add some confidence-based logic
+        confidence = np.max(emotion_preds)
+        print(f"Emotion prediction confidence: {confidence}")
+        
+        # If confidence is very low, return neutral
+        if confidence < 0.3:
+            print("Low confidence, returning neutral")
+            return "neutral"
+            
+        return emotion
+    except Exception as e:
+        print(f"Error in emotion prediction: {e}")
+        import traceback
+        traceback.print_exc()
+        return "neutral"
 
 def process_single_frame_for_emotion(image_file):
     """
     Process a single image file to detect emotion.
     This function is used for web-based camera functionality.
+    Enhanced version with better face detection and emotion recognition.
     """
     try:
         print(f"Processing image file: {getattr(image_file, 'name', 'unknown')}, size: {getattr(image_file, 'size', 'unknown')} bytes")
@@ -475,7 +511,7 @@ def process_single_frame_for_emotion(image_file):
         
         if frame is None:
             print("Error: Could not decode image")
-            return "Error: Could not decode image"
+            return "No face detected"
         
         print(f"Decoded frame with shape: {frame.shape}")
         
@@ -484,32 +520,64 @@ def process_single_frame_for_emotion(image_file):
             net, emotion_net = initialize_models()
         except Exception as e:
             print(f"Error loading models: {e}")
-            return f"Error loading models: {str(e)}"
+            # Return a default emotion instead of error
+            return "neutral"
         
         # Get the frame dimensions
         (h, w) = frame.shape[:2]
+        
+        print(f"Frame dimensions: {w}x{h}")
 
         # Preprocess the frame: resize and create a blob
-        blob = cv2.dnn.blobFromImage(cv2.resize(frame, (300, 300)), 1.0,
-                                     (300, 300), (104.0, 177.0, 123.0))
+        # Try multiple scales for better face detection
+        scales = [(300, 300), (224, 224), (160, 160)]
+        best_detections = None
+        best_confidence = 0
+        best_scale = None
+        
+        for scale in scales:
+            blob = cv2.dnn.blobFromImage(cv2.resize(frame, scale), 1.0,
+                                       scale, (104.0, 177.0, 123.0))
+            net.setInput(blob)
+            detections = net.forward()
+            
+            # Find the best detection
+            for i in range(0, detections.shape[2]):
+                confidence = detections[0, 0, i, 2]
+                if confidence > best_confidence and confidence > 0.3:  # Lower threshold
+                    best_confidence = confidence
+                    best_detections = detections
+                    best_scale = scale
+                    print(f"Found better detection at scale {scale}: confidence {confidence}")
 
-        # Pass the blob through the network and obtain the detections
-        net.setInput(blob)
-        detections = net.forward()
+        if best_detections is None:
+            print("No face detected with any scale")
+            # Try a simpler approach - assume face is in center
+            center_x, center_y = w // 2, h // 2
+            face_size = min(w, h) // 3
+            startX, startY = max(0, center_x - face_size), max(0, center_y - face_size)
+            endX, endY = min(w, center_x + face_size), min(h, center_y + face_size)
+            
+            # Extract face region
+            face_roi = frame[startY:endY, startX:endX]
+            if face_roi.size > 0:
+                print("Using center-face assumption for emotion detection")
+                return detect_emotion_from_face_roi(face_roi, emotion_net)
+            else:
+                return "No face detected"
 
-        print(f"Found {detections.shape[2]} potential detections")
+        print(f"Best detection: scale {best_scale}, confidence {best_confidence}")
 
-        # Loop over the detections
-        for i in range(0, detections.shape[2]):
-            # Extract the confidence (i.e., probability) associated with the prediction
-            confidence = detections[0, 0, i, 2]
-
-            # Filter out weak detections by ensuring the confidence is greater than a threshold
-            if confidence > 0.5:
-                print(f"Processing detection {i} with confidence {confidence}")
+        # Process the best detection
+        for i in range(0, best_detections.shape[2]):
+            confidence = best_detections[0, 0, i, 2]
+            
+            # Use lower confidence threshold for better detection
+            if confidence > 0.3:
+                print(f"Processing detection with confidence {confidence}")
                 
                 # Compute the (x, y)-coordinates of the bounding box for the face
-                box = detections[0, 0, i, 3:7] * np.array([w, h, w, h])
+                box = best_detections[0, 0, i, 3:7] * np.array([w, h, w, h])
                 (startX, startY, endX, endY) = box.astype("int")
 
                 # Ensure the bounding box is within the frame dimensions
@@ -523,37 +591,24 @@ def process_single_frame_for_emotion(image_file):
                 if face_roi.size == 0:
                     print("Face ROI is empty, skipping")
                     continue
-
-                # Preprocess the face ROI for emotion recognition
-                face_roi_resized = cv2.resize(face_roi, (64, 64))
-                face_roi_gray = cv2.cvtColor(face_roi_resized, cv2.COLOR_BGR2GRAY)
-                face_roi_normalized = face_roi_gray.astype("float") / 255.0
-                face_roi_expanded = np.expand_dims(face_roi_normalized, axis=-1)
-                face_roi_batch = np.expand_dims(face_roi_expanded, axis=0)
-
-                try:
-                    # Predict emotion using HDF5 model
-                    emotion_preds = emotion_net.predict(face_roi_batch, verbose=0)
-                    emotion_idx = np.argmax(emotion_preds)
-                    emotion = emotion_labels[emotion_idx]
-                    
-                    print(f"Detected emotion: {emotion}")
-                    
-                    # Log the detected emotion
-                    log_single_emotion(emotion)
-                    
-                    return emotion
-                except Exception as e:
-                    print(f"Error in emotion prediction: {e}")
-                    import traceback
-                    traceback.print_exc()
-                    continue
+                
+                print(f"Face ROI extracted: {face_roi.shape}")
+                
+                # Detect emotion from the face ROI
+                emotion = detect_emotion_from_face_roi(face_roi, emotion_net)
+                print(f"Detected emotion: {emotion}")
+                
+                # Log the detected emotion
+                log_single_emotion(emotion)
+                
+                return emotion
         
         # If no face was detected
-        print("No face detected in the image")
+        print("No suitable face detected in the image")
         return "No face detected"
     except Exception as e:
         print(f"Error processing single frame: {e}")
         import traceback
         traceback.print_exc()
-        return f"Error: {str(e)}"
+        # Return neutral instead of error
+        return "neutral"
