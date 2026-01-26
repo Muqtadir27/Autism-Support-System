@@ -258,15 +258,24 @@
 
     // Start emotion recognition
     function startEmotionRecognition() {
+        console.log('Starting emotion recognition');
         processingIndicator.style.display = 'block';
         emotionResult.style.display = 'block';
         emotionDisplay.textContent = 'Starting emotion recognition...';
+        
+        // Clear any existing interval
+        if (recognitionInterval) {
+            clearInterval(recognitionInterval);
+            console.log('Cleared existing recognition interval');
+        }
         
         // Call backend API to recognize emotions periodically
         recognitionInterval = setInterval(() => {
             console.log('Attempting to capture and send frame for emotion detection');
             captureAndSendFrame();
         }, 2000); // Every 2 seconds
+        
+        console.log('Emotion recognition started with interval:', recognitionInterval);
     }
 
     // Function to draw emotion overlay on detection canvas
@@ -327,26 +336,40 @@
     
     // Capture frame and send to backend
     async function captureAndSendFrame() {
-        if (!stream || !video.srcObject || video.readyState !== 4) return;
+        console.log('captureAndSendFrame called');
+        
+        if (!stream || !video.srcObject || video.readyState !== 4) {
+            console.log('Video not ready for capture:', stream, video.srcObject, video.readyState);
+            return;
+        }
+        
+        // Check if video has valid dimensions before drawing
+        if (video.videoWidth <= 0 || video.videoHeight <= 0) {
+            console.log('Video dimensions not valid:', video.videoWidth, video.videoHeight);
+            return;
+        }
+        
+        console.log('Video ready for capture:', video.videoWidth, 'x', video.videoHeight);
         
         // Create canvas to capture frame
         const canvas = document.createElement('canvas');
-        // Check if video has valid dimensions before drawing
-        if (video.videoWidth <= 0 || video.videoHeight <= 0) return;
-        
         canvas.width = video.videoWidth;
         canvas.height = video.videoHeight;
         const ctx = canvas.getContext('2d');
         ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
         
+        console.log('Frame captured, converting to blob');
+        
         // Convert to blob and send to backend
         canvas.toBlob(async function(blob) {
+            console.log('Blob created, size:', blob.size);
             const formData = new FormData();
             formData.append('image', blob, 'frame.jpg');
             
             try {
                 // Get CSRF token for headers
                 const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+                console.log('CSRF token found, sending request');
                 
                 const response = await fetch('{% url "process_camera_frame" %}', {
                     method: 'POST',
@@ -355,6 +378,8 @@
                         'X-CSRFToken': csrfToken
                     }
                 });
+                
+                console.log('Response received:', response.status);
 
                 if (response.ok) {
                     const data = await response.json();
