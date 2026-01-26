@@ -97,6 +97,34 @@ def log_emotion(emotion_log, emotion):
     timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     emotion_log.append({"timestamp": timestamp, "emotion": emotion})
 
+def log_single_emotion(emotion):
+    """Log a single emotion detection to the emotion log file."""
+    import os
+    import pandas as pd
+    from datetime import datetime
+    
+    # Get the current directory
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    log_file = os.path.join(current_dir, "emotion_log.xlsx")
+    
+    # Create a new DataFrame with the single emotion
+    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    new_entry = pd.DataFrame([{"timestamp": timestamp, "emotion": emotion}])
+    
+    # Append to existing log file or create new one
+    if os.path.exists(log_file):
+        try:
+            existing_df = pd.read_excel(log_file)
+            combined_df = pd.concat([existing_df, new_entry], ignore_index=True)
+            combined_df.to_excel(log_file, index=False)
+        except Exception as e:
+            print(f"Error reading existing log, creating new one: {e}")
+            new_entry.to_excel(log_file, index=False)
+    else:
+        new_entry.to_excel(log_file, index=False)
+    
+    print(f"Emotion '{emotion}' logged to {log_file}")
+
 def save_emotion_log(emotion_log):
     current_dir = os.path.dirname(os.path.abspath(__file__))
     log_file = os.path.join(current_dir, "emotion_log.xlsx")
@@ -495,6 +523,9 @@ def process_single_frame_for_emotion(image_file):
                     emotion_preds = emotion_net.predict(face_roi_batch, verbose=0)
                     emotion_idx = np.argmax(emotion_preds)
                     emotion = emotion_labels[emotion_idx]
+                    
+                    # Log the detected emotion
+                    log_single_emotion(emotion)
                     
                     return emotion
                 except Exception as e:

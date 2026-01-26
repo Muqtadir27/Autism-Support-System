@@ -1,5 +1,6 @@
 {% extends "./home.html" %}
 {% load static %}
+{% csrf_token %}
 
 {% block meta %}
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -250,7 +251,7 @@
             formData.append('csrfmiddlewaretoken', document.querySelector('[name=csrfmiddlewaretoken]').value);
 
             try {
-                const response = await fetch('/predict/process_camera_frame/', {
+                const response = await fetch('{% url "process_camera_frame" %}', {
                     method: 'POST',
                     body: formData
                 });

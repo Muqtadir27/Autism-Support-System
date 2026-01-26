@@ -55,18 +55,19 @@ def run_detection(request):
             import traceback
             traceback.print_exc()
         
+        from django.template.context_processors import csrf
         context = {
-            'status': 'Detection started',
-            'note': 'Camera window should open shortly. Please face the camera.',
+            'status': 'Real-time emotion detection active',
+            'note': 'Position your face in front of the camera for emotion detection.',
             'instructions': [
-                'A camera window will open showing your face.',
-                'The system will detect your emotion in real-time.',
-                'Press "q" in the camera window to stop detection.',
-                'Download the Emotion log file from below when done.',
-                'Note: This feature requires running the application locally with a connected camera.',
-                'In web deployment, the camera window cannot be displayed in the browser.'
+                'Position your face within the camera view',
+                'The system will detect your emotion in real-time',
+                'Results will appear below the camera feed',
+                'Click STOP CAMERA when finished',
+                'Download the Emotion log file when done'
             ]
         }
+        context.update(csrf(request))  # Add CSRF token to context
         return render(request, 'Autism.html', context)
     elif request.method == 'POST' and 'Emotion_flashcard_game_buuton' in request.POST:
         return redirect('log_dashboard')
