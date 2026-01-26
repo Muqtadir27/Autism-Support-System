@@ -205,9 +205,23 @@
             
             // Update detection canvas size when video metadata loads
             video.onloadedmetadata = function() {
+                console.log('Video metadata loaded, updating canvas size');
                 detectionCanvas.width = video.videoWidth;
                 detectionCanvas.height = video.videoHeight;
+                detectionCanvas.style.width = video.offsetWidth + 'px';
+                detectionCanvas.style.height = video.offsetHeight + 'px';
                 detectionCtx = detectionCanvas.getContext('2d');
+            };
+            
+            // Also update when video is playing (in case metadata event fires before video is fully ready)
+            video.oncanplay = function() {
+                console.log('Video can play, updating canvas size');
+                if (video.videoWidth > 0 && video.videoHeight > 0) {
+                    detectionCanvas.width = video.videoWidth;
+                    detectionCanvas.height = video.videoHeight;
+                    detectionCanvas.style.width = video.offsetWidth + 'px';
+                    detectionCanvas.style.height = video.offsetHeight + 'px';
+                }
             };
             
             startBtn.style.display = 'none';
@@ -246,51 +260,66 @@
     function startEmotionRecognition() {
         processingIndicator.style.display = 'block';
         emotionResult.style.display = 'block';
+        emotionDisplay.textContent = 'Starting emotion recognition...';
         
         // Call backend API to recognize emotions periodically
-        recognitionInterval = setInterval(captureAndSendFrame, 2000); // Every 2 seconds
+        recognitionInterval = setInterval(() => {
+            console.log('Attempting to capture and send frame for emotion detection');
+            captureAndSendFrame();
+        }, 2000); // Every 2 seconds
     }
 
     // Function to draw emotion overlay on detection canvas
     function drawEmotionOverlay(emotion) {
-        if (!detectionCtx || !detectionCanvas) return;
+        if (!detectionCtx || !detectionCanvas) {
+            console.log('Detection context or canvas not available');
+            return;
+        }
+        
+        console.log(`Drawing emotion overlay: ${emotion}`);
         
         // Clear previous drawings
         detectionCtx.clearRect(0, 0, detectionCanvas.width, detectionCanvas.height);
         
         // Draw face rectangle and emotion label
         detectionCtx.strokeStyle = '#00f2ff';
-        detectionCtx.lineWidth = 3;
+        detectionCtx.lineWidth = 4;
+        detectionCtx.shadowColor = 'rgba(0, 242, 255, 0.8)';
+        detectionCtx.shadowBlur = 10;
         
         // Draw rectangle around face area (approximate center of video)
-        const rectX = detectionCanvas.width * 0.1;
-        const rectY = detectionCanvas.height * 0.1;
-        const rectWidth = detectionCanvas.width * 0.8;
-        const rectHeight = detectionCanvas.height * 0.8;
+        const rectX = detectionCanvas.width * 0.15;
+        const rectY = detectionCanvas.height * 0.15;
+        const rectWidth = detectionCanvas.width * 0.7;
+        const rectHeight = detectionCanvas.height * 0.7;
         
         detectionCtx.strokeRect(rectX, rectY, rectWidth, rectHeight);
         
+        // Reset shadow for text
+        detectionCtx.shadowBlur = 0;
+        
         // Draw emotion label background
-        detectionCtx.fillStyle = 'rgba(0, 242, 255, 0.7)';
-        detectionCtx.font = 'bold 18px Arial';
+        detectionCtx.fillStyle = 'rgba(0, 242, 255, 0.8)';
+        detectionCtx.font = 'bold 20px Arial';
         const text = emotion || 'No face detected';
         const textMetrics = detectionCtx.measureText(text);
         const textWidth = textMetrics.width;
-        const textHeight = 25;
+        const textHeight = 30;
         
         // Position text box above the face rectangle
         const textX = rectX;
-        const textY = rectY - 10;
+        const textY = rectY - 15;
         
-        detectionCtx.fillRect(textX, textY - textHeight, textWidth + 10, textHeight);
+        detectionCtx.fillRect(textX, textY - textHeight, textWidth + 15, textHeight);
         
-        // Draw emotion text
-        detectionCtx.fillStyle = 'white';
-        detectionCtx.fillText(text, textX + 5, textY - 5);
+        // Draw emotion text with better contrast
+        detectionCtx.fillStyle = '#0a0e27';
+        detectionCtx.fillText(text, textX + 8, textY - 8);
     }
     
     // Function to clear emotion overlay
     function clearEmotionOverlay() {
+        console.log('Clearing emotion overlay');
         if (detectionCtx && detectionCanvas) {
             detectionCtx.clearRect(0, 0, detectionCanvas.width, detectionCanvas.height);
         }

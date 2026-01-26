@@ -98,12 +98,17 @@ def download_emotion_log(request):
 
 def process_camera_frame(request):
     print(f"Received request to process camera frame")
+    print(f"Request method: {request.method}")
+    print(f"Request files keys: {list(request.FILES.keys())}")
+    print(f"Request META keys: {list(request.META.keys())}")
+    
     if request.method == 'POST':
         try:
             # Get the uploaded image
             image_file = request.FILES.get('image')
             if not image_file:
                 print("No image file received")
+                print(f"Available files: {list(request.FILES.keys())}")
                 return JsonResponse({'success': False, 'error': 'No image provided'})
             
             print(f"Received image file: {image_file.name}, size: {image_file.size} bytes")
@@ -112,6 +117,7 @@ def process_camera_frame(request):
             # Import the function here to avoid startup issues
             from .AutismEmoRec import process_single_frame_for_emotion
             
+            print("Calling process_single_frame_for_emotion function...")
             # Call the emotion detection function
             emotion = process_single_frame_for_emotion(image_file)
             print(f"Detected emotion: {emotion}")
