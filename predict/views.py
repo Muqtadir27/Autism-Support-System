@@ -42,27 +42,17 @@ def run_detection(request):
         }
         return render(request, 'vocal_support.html', context)
     elif request.method == 'POST' and 'autism_emotion_recognition_button' in request.POST:
-        # Start Autism emotion recognition in a separate process so OpenCV window displays properly
-        try:
-            # Start the process - use threading instead (simpler and works better for GUI)
-            autism_func = get_autism_emotion_recognition()
-            thread = threading.Thread(target=autism_func, daemon=False)
-            thread.start()
-            print(f"Emotion recognition thread started")
-        except Exception as e:
-            error_msg = f"Error starting emotion recognition process: {e}"
-            print(error_msg)
-            import traceback
-            traceback.print_exc()
+        # Redirect to web-based camera interface (no threading needed)
         
         from django.template.context_processors import csrf
         context = {
-            'status': 'Real-time emotion detection active',
-            'note': 'Position your face in front of the camera for emotion detection.',
+            'status': 'Web-based emotion detection ready',
+            'note': 'Position your face in front of your device camera for emotion detection.',
             'instructions': [
+                'Click START CAMERA to begin',
+                'Allow camera access when prompted',
                 'Position your face within the camera view',
-                'The system will detect your emotion in real-time',
-                'Results will appear below the camera feed',
+                'Emotions will be detected and displayed in real-time',
                 'Click STOP CAMERA when finished',
                 'Download the Emotion log file when done'
             ]
