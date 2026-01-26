@@ -256,26 +256,18 @@
         emotionResult.style.display = 'none';
     }
 
-    // Start emotion recognition
+    // Start emotion recognition - ultra fast
     function startEmotionRecognition() {
-        console.log('Starting emotion recognition');
         processingIndicator.style.display = 'block';
         emotionResult.style.display = 'block';
-        emotionDisplay.textContent = 'Starting emotion recognition...';
+        emotionDisplay.textContent = 'Ready';
         
-        // Clear any existing interval
+        // Ultra-fast detection every 500ms
         if (recognitionInterval) {
             clearInterval(recognitionInterval);
-            console.log('Cleared existing recognition interval');
         }
         
-        // Call backend API to recognize emotions periodically
-        recognitionInterval = setInterval(() => {
-            console.log('Attempting to capture and send frame for emotion detection');
-            captureAndSendFrame();
-        }, 2000); // Every 2 seconds
-        
-        console.log('Emotion recognition started with interval:', recognitionInterval);
+        recognitionInterval = setInterval(captureAndSendFrame, 500);
     }
 
     // Function to draw emotion overlay on detection canvas
@@ -334,11 +326,10 @@
         }
     }
     
-    // Capture frame and send to backend
+    // Ultra-fast capture and send
     async function captureAndSendFrame() {
         if (!stream || !video.srcObject || video.readyState !== 4) return;
         
-        // Create canvas to capture frame
         const canvas = document.createElement('canvas');
         if (video.videoWidth <= 0 || video.videoHeight <= 0) return;
         
@@ -347,13 +338,11 @@
         const ctx = canvas.getContext('2d');
         ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
         
-        // Convert to blob and send to backend
         canvas.toBlob(async function(blob) {
             const formData = new FormData();
             formData.append('image', blob, 'frame.jpg');
             
             try {
-                // Get CSRF token for headers
                 const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
                 
                 const response = await fetch('{% url "process_camera_frame" %}', {
@@ -366,19 +355,13 @@
 
                 if (response.ok) {
                     const data = await response.json();
-                    // Display the emotion result
-                    emotionDisplay.textContent = `Detected: ${data.emotion || 'neutral'}`;
-                    // Draw emotion overlay on the detection canvas
+                    emotionDisplay.textContent = data.emotion || 'neutral';
                     drawEmotionOverlay(data.emotion || 'neutral');
-                } else {
-                    emotionDisplay.textContent = 'Processing...';
-                    drawEmotionOverlay('Processing');
                 }
             } catch (error) {
-                emotionDisplay.textContent = 'Processing...';
-                drawEmotionOverlay('Processing');
+                // Silent fail - keep trying
             }
-        }, 'image/jpeg', 0.8);
+        }, 'image/jpeg', 0.9);
     }
 
     // Event listeners

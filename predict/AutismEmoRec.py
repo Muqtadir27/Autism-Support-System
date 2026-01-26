@@ -489,65 +489,38 @@ def detect_emotion_from_face_roi(face_roi, emotion_net):
 
 def process_single_frame_for_emotion(image_file):
     """
-    Simple emotion detection from image - analyzes image features directly
+    Ultra-fast emotion detection - instant analysis
     """
     try:
-        print(f"Processing image for emotion detection")
-        
-        # Import necessary modules
+        # Read image directly without complex processing
         import cv2
         import numpy as np
-        from io import BytesIO
-        from PIL import Image
         
-        # Read the image file
         image_bytes = image_file.read()
         image_array = np.frombuffer(image_bytes, dtype=np.uint8)
         frame = cv2.imdecode(image_array, cv2.IMREAD_COLOR)
         
         if frame is None:
-            print("Error: Could not decode image")
             return "neutral"
         
-        print(f"Frame decoded successfully: {frame.shape}")
-        
-        # Convert to grayscale for analysis
+        # Convert to grayscale instantly
         gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
         
-        # Simple emotion detection based on image properties
-        # Calculate average brightness
-        avg_brightness = np.mean(gray)
-        
-        # Calculate contrast (standard deviation)
+        # Ultra-fast feature extraction
+        brightness = np.mean(gray)
         contrast = np.std(gray)
         
-        # Calculate number of edges (activity level)
-        edges = cv2.Canny(gray, 50, 150)
-        edge_density = np.sum(edges > 0) / (edges.shape[0] * edges.shape[1])
-        
-        print(f"Brightness: {avg_brightness:.2f}, Contrast: {contrast:.2f}, Edge density: {edge_density:.4f}")
-        
-        # Simple emotion mapping based on image features
-        if avg_brightness > 150 and contrast > 40:  # Bright and high contrast
-            emotion = "happy"
-        elif avg_brightness < 100 and contrast < 30:  # Dark and low contrast
-            emotion = "sad"
-        elif edge_density > 0.05:  # High activity/edges
-            emotion = "surprise"
-        elif contrast > 50:  # High contrast but not bright
-            emotion = "angry"
-        elif avg_brightness > 120:  # Medium brightness
-            emotion = "neutral"
-        else:  # Default fallback
-            emotion = "neutral"
-        
-        print(f"Detected emotion: {emotion}")
-        
-        # Log the detected emotion
-        log_single_emotion(emotion)
-        
-        return emotion
-        
-    except Exception as e:
-        print(f"Error in simple emotion detection: {e}")
+        # Instant emotion mapping
+        if brightness > 180:  # Very bright
+            return "happy"
+        elif brightness < 80:  # Very dark
+            return "sad"
+        elif contrast > 60:  # High contrast
+            return "angry"
+        elif contrast > 30:  # Medium contrast
+            return "surprise"
+        else:  # Default
+            return "neutral"
+            
+    except:
         return "neutral"
