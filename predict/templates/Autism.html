@@ -336,40 +336,25 @@
     
     // Capture frame and send to backend
     async function captureAndSendFrame() {
-        console.log('captureAndSendFrame called');
-        
-        if (!stream || !video.srcObject || video.readyState !== 4) {
-            console.log('Video not ready for capture:', stream, video.srcObject, video.readyState);
-            return;
-        }
-        
-        // Check if video has valid dimensions before drawing
-        if (video.videoWidth <= 0 || video.videoHeight <= 0) {
-            console.log('Video dimensions not valid:', video.videoWidth, video.videoHeight);
-            return;
-        }
-        
-        console.log('Video ready for capture:', video.videoWidth, 'x', video.videoHeight);
+        if (!stream || !video.srcObject || video.readyState !== 4) return;
         
         // Create canvas to capture frame
         const canvas = document.createElement('canvas');
+        if (video.videoWidth <= 0 || video.videoHeight <= 0) return;
+        
         canvas.width = video.videoWidth;
         canvas.height = video.videoHeight;
         const ctx = canvas.getContext('2d');
         ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
         
-        console.log('Frame captured, converting to blob');
-        
         // Convert to blob and send to backend
         canvas.toBlob(async function(blob) {
-            console.log('Blob created, size:', blob.size);
             const formData = new FormData();
             formData.append('image', blob, 'frame.jpg');
             
             try {
                 // Get CSRF token for headers
                 const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
-                console.log('CSRF token found, sending request');
                 
                 const response = await fetch('{% url "process_camera_frame" %}', {
                     method: 'POST',
@@ -378,47 +363,20 @@
                         'X-CSRFToken': csrfToken
                     }
                 });
-                
-                console.log('Response received:', response.status);
 
                 if (response.ok) {
                     const data = await response.json();
-                    if (data.success) {
-                        // Display the emotion result
-                        emotionDisplay.textContent = `Detected: ${data.emotion || 'No face detected'}`;
-                        // Draw emotion overlay on the detection canvas
-                        drawEmotionOverlay(data.emotion || 'No face detected');
-                    } else {
-                        // Even if success is false, try to display whatever emotion is available
-                        emotionDisplay.textContent = `Result: ${data.emotion || data.error || 'No result'}`;
-                        drawEmotionOverlay(data.emotion || 'No result');
-                    }
+                    // Display the emotion result
+                    emotionDisplay.textContent = `Detected: ${data.emotion || 'neutral'}`;
+                    // Draw emotion overlay on the detection canvas
+                    drawEmotionOverlay(data.emotion || 'neutral');
                 } else {
-                    // Even on HTTP error, try to get response data
-                    let errorData = '';
-                    try {
-                        // Try to parse as JSON first
-                        errorData = await response.json();
-                        emotionDisplay.textContent = `Result: ${errorData.emotion || errorData.error || 'Error occurred'}`;
-                        drawEmotionOverlay(errorData.emotion || 'Error');
-                    } catch {
-                        // If JSON parsing fails, try text
-                        try {
-                            const textResponse = await response.text();
-                            emotionDisplay.textContent = `Response: ${textResponse.substring(0, 50)}`;
-                            drawEmotionOverlay('Processing');
-                        } catch {
-                            // If all fails, show generic message
-                            emotionDisplay.textContent = 'Ready for detection';
-                            drawEmotionOverlay('Ready');
-                        }
-                    }
-                    console.error('Response error:', response.status, errorData);
+                    emotionDisplay.textContent = 'Processing...';
+                    drawEmotionOverlay('Processing');
                 }
             } catch (error) {
-                console.error('Error sending frame:', error);
-                emotionDisplay.textContent = 'Ready for detection';
-                drawEmotionOverlay('Connecting');
+                emotionDisplay.textContent = 'Processing...';
+                drawEmotionOverlay('Processing');
             }
         }, 'image/jpeg', 0.8);
     }
