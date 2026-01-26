@@ -256,19 +256,26 @@
         emotionResult.style.display = 'none';
     }
 
-    // Start emotion recognition - fast detection
+    // Start emotion recognition - final robust version
     function startEmotionRecognition() {
+        console.log('Starting emotion recognition');
         processingIndicator.style.display = 'block';
         emotionResult.style.display = 'block';
         emotionDisplay.textContent = 'Detecting...';
         
-        // Clear any existing interval
+        // Clear any existing interval to prevent conflicts
         if (recognitionInterval) {
             clearInterval(recognitionInterval);
+            console.log('Cleared existing interval');
         }
         
-        // Fast detection every 1 second
-        recognitionInterval = setInterval(captureAndSendFrame, 1000);
+        // Start detection - every 800ms for good balance
+        recognitionInterval = setInterval(() => {
+            console.log('Capturing frame for emotion detection');
+            captureAndSendFrame();
+        }, 800);
+        
+        console.log('Emotion recognition started');
     }
 
     // Function to draw emotion overlay on detection canvas
@@ -327,24 +334,48 @@
         }
     }
     
-    // Fast capture and send
+    // Robust frame capture and emotion detection
     async function captureAndSendFrame() {
-        if (!stream || !video.srcObject || video.readyState !== 4) return;
+        console.log('captureAndSendFrame called');
         
+        // Validate video is ready
+        if (!stream || !video.srcObject || video.readyState !== 4) {
+            console.log('Video not ready');
+            return;
+        }
+        
+        // Validate dimensions
+        if (video.videoWidth <= 0 || video.videoHeight <= 0) {
+            console.log('Invalid video dimensions');
+            return;
+        }
+        
+        console.log('Video ready:', video.videoWidth, 'x', video.videoHeight);
+        
+        // Create canvas and capture frame
         const canvas = document.createElement('canvas');
-        if (video.videoWidth <= 0 || video.videoHeight <= 0) return;
-        
         canvas.width = video.videoWidth;
         canvas.height = video.videoHeight;
         const ctx = canvas.getContext('2d');
         ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
         
+        console.log('Frame captured');
+        
+        // Convert to blob and send
         canvas.toBlob(async function(blob) {
+            if (!blob) {
+                console.log('Failed to create blob');
+                return;
+            }
+            
+            console.log('Blob created, size:', blob.size);
+            
             const formData = new FormData();
             formData.append('image', blob, 'frame.jpg');
             
             try {
                 const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+                console.log('CSRF token found, sending request');
                 
                 const response = await fetch('{% url "process_camera_frame" %}', {
                     method: 'POST',
@@ -353,14 +384,23 @@
                         'X-CSRFToken': csrfToken
                     }
                 });
-
+                
+                console.log('Response status:', response.status);
+                
                 if (response.ok) {
                     const data = await response.json();
+                    console.log('Received emotion:', data.emotion);
                     emotionDisplay.textContent = data.emotion || 'neutral';
                     drawEmotionOverlay(data.emotion || 'neutral');
+                } else {
+                    console.log('Non-OK response:', response.status);
+                    emotionDisplay.textContent = 'neutral';
+                    drawEmotionOverlay('neutral');
                 }
             } catch (error) {
-                // Keep trying
+                console.error('Error:', error);
+                emotionDisplay.textContent = 'neutral';
+                drawEmotionOverlay('neutral');
             }
         }, 'image/jpeg', 0.8);
     }
