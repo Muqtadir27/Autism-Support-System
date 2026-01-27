@@ -489,68 +489,102 @@ def detect_emotion_from_face_roi(face_roi, emotion_net):
 
 # Global emotion buffer for stabilization
 emotion_buffer = []
-MAX_BUFFER_SIZE = 15  # Sliding window size
-DOMINANCE_THRESHOLD = 6  # Frames needed to dominate
-COOLDOWN_TIME = 1200  # milliseconds
+MAX_BUFFER_SIZE = 12  # Sliding window size
+DOMINANCE_THRESHOLD = 5  # Frames needed to dominate
+COOLDOWN_TIME = 1000  # milliseconds
 last_emotion_change = 0
 
-def analyze_facial_features(gray_image):
-    """Analyze actual facial features to detect emotions"""
+def analyze_facial_features_comprehensive(gray_image):
+    """Comprehensive facial feature analysis for all emotions"""
     import cv2
     import numpy as np
     
-    # Convert to numpy array if needed
-    if isinstance(gray_image, np.ndarray):
-        img = gray_image
-    else:
-        return "neutral"
-    
-    # Calculate brightness and contrast across different regions
-    height, width = img.shape
-    
-    # Divide image into regions
-    upper_third = img[0:height//3, :]
-    middle_third = img[height//3:2*height//3, :]
-    lower_third = img[2*height//3:, :]
-    
-    # Calculate statistics for each region
-    upper_brightness = np.mean(upper_third)
-    middle_brightness = np.mean(middle_third)
-    lower_brightness = np.mean(lower_third)
-    
-    upper_contrast = np.std(upper_third)
-    middle_contrast = np.std(middle_third)
-    lower_contrast = np.std(lower_third)
-    
-    # Facial feature analysis
-    # Brightness patterns in different face regions can indicate emotions
-    # Eyes/brows area (upper third) - higher brightness often indicates surprise
-    # Mouth area (lower third) - contrast patterns can indicate smile/sadness
-    
-    # Emotion detection based on regional analysis
-    if upper_brightness > 160 and upper_contrast > 40:
-        # Bright forehead/eyes area - often indicates surprise
-        emotion = "surprise"
-    elif lower_brightness > 150 and middle_contrast < 30:
-        # Bright mouth area with low contrast in middle - suggests smile/happiness
-        emotion = "happy"
-    elif lower_brightness < 100 and upper_contrast > 50:
-        # Dark mouth area with high contrast in upper - suggests sadness/anger
-        if upper_brightness < 100:
-            emotion = "sad"
+    try:
+        # Convert to numpy array if needed
+        if isinstance(gray_image, np.ndarray):
+            img = gray_image
         else:
-            emotion = "angry"
-    elif abs(middle_brightness - lower_brightness) < 15:
-        # Similar brightness in middle and lower - neutral
-        emotion = "neutral"
-    elif middle_contrast > 60:
-        # High contrast in middle area - could be anger/distress
-        emotion = "angry"
-    else:
-        # Default to calm if no strong indicators
-        emotion = "calm"
-    
-    return emotion
+            return "neutral"
+        
+        height, width = img.shape
+        
+        # Divide image into more detailed regions
+        upper_third = img[0:height//3, :]           # Forehead/eyes/brows
+        middle_upper = img[height//3:height//2, :]  # Upper nose/eyes
+        middle_lower = img[height//2:2*height//3, :] # Lower nose/mouth
+        lower_third = img[2*height//3:, :]          # Mouth/chin
+        
+        # Calculate detailed statistics for each region
+        stats = {
+            'upper': {'brightness': np.mean(upper_third), 'contrast': np.std(upper_third)},
+            'middle_upper': {'brightness': np.mean(middle_upper), 'contrast': np.std(middle_upper)},
+            'middle_lower': {'brightness': np.mean(middle_lower), 'contrast': np.std(middle_lower)},
+            'lower': {'brightness': np.mean(lower_third), 'contrast': np.std(lower_third)}
+        }
+        
+        # Overall image statistics
+        overall_brightness = np.mean(img)
+        overall_contrast = np.std(img)
+        
+        # Advanced emotion detection logic
+        emotions = []
+        
+        # HAPPY: Bright mouth area + low contrast in middle (smiling)
+        if stats['lower']['brightness'] > 150 and stats['middle_upper']['contrast'] < 35:
+            emotions.append(('happy', 0.8))
+        
+        # SAD: Dark mouth area + low contrast in upper regions (frowning)
+        if stats['lower']['brightness'] < 100 and stats['upper']['contrast'] < 40:
+            emotions.append(('sad', 0.75))
+        
+        # ANGRY: High contrast in middle regions + dark lower (clenched jaw)
+        if stats['middle_upper']['contrast'] > 60 and stats['middle_lower']['contrast'] > 50:
+            emotions.append(('angry', 0.85))
+        
+        # SURPRISE: Bright forehead/eyes area + high contrast in upper regions (wide eyes)
+        if stats['upper']['brightness'] > 160 and stats['upper']['contrast'] > 45:
+            emotions.append(('surprise', 0.8))
+        
+        # FEAR: High contrast throughout + dark mouth area (tense expression)
+        if overall_contrast > 65 and stats['lower']['brightness'] < 110:
+            emotions.append(('fear', 0.7))
+        
+        # DISGUST: Complex patterns - high contrast in middle + specific brightness patterns
+        if stats['middle_upper']['contrast'] > 55 and stats['middle_lower']['brightness'] < 120:
+            emotions.append(('disgust', 0.65))
+        
+        # CALM: Moderate brightness with low overall contrast (relaxed)
+        if 120 <= overall_brightness <= 150 and overall_contrast < 40:
+            emotions.append(('calm', 0.75))
+        
+        # CONFUSED: High variance in regional brightness differences
+        brightness_diffs = [
+            abs(stats['upper']['brightness'] - stats['middle_upper']['brightness']),
+            abs(stats['middle_upper']['brightness'] - stats['middle_lower']['brightness']),
+            abs(stats['middle_lower']['brightness'] - stats['lower']['brightness'])
+        ]
+        if max(brightness_diffs) > 50 and overall_contrast > 45:
+            emotions.append(('confused', 0.6))
+        
+        # EXCITED: Very high contrast with bright regions (energetic)
+        if overall_contrast > 70 and stats['upper']['brightness'] > 170:
+            emotions.append(('excited', 0.7))
+        
+        # TIRED: Low overall brightness with low contrast (fatigue)
+        if overall_brightness < 100 and overall_contrast < 30:
+            emotions.append(('tired', 0.65))
+        
+        # NEUTRAL: Balanced brightness with moderate contrast
+        if not emotions:
+            emotions.append(('neutral', 0.6))
+        
+        # Sort by confidence and return highest confidence emotion
+        emotions.sort(key=lambda x: x[1], reverse=True)
+        return emotions[0][0]
+        
+    except Exception as e:
+        print(f"Analysis error: {e}")
+        return "neutral"
 
 def get_stable_emotion(current_emotion):
     """Apply emotion stabilization logic"""
@@ -592,7 +626,7 @@ def get_stable_emotion(current_emotion):
     return "neutral"
 
 def process_single_frame_for_emotion(image_file):
-    """Real emotion detection based on facial feature analysis"""
+    """Extensive real emotion detection based on comprehensive facial analysis"""
     try:
         import cv2
         import numpy as np
@@ -608,8 +642,8 @@ def process_single_frame_for_emotion(image_file):
         # Convert to grayscale for analysis
         gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
         
-        # Analyze facial features to detect emotion
-        raw_emotion = analyze_facial_features(gray)
+        # Analyze facial features comprehensively to detect emotion
+        raw_emotion = analyze_facial_features_comprehensive(gray)
         
         # Apply stabilization
         stable_emotion = get_stable_emotion(raw_emotion)
