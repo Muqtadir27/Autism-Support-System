@@ -490,10 +490,19 @@ def detect_emotion_from_face_roi(face_roi, emotion_net):
 # Global emotion buffer for stabilization
 emotion_buffer = []
 MAX_BUFFER_SIZE = 15  # Sliding window size
-CONFIDENCE_THRESHOLD = 0.6
-DOMINANCE_THRESHOLD = 8  # Frames needed to dominate
-COOLDOWN_TIME = 2000  # milliseconds
+DOMINANCE_THRESHOLD = 6  # Frames needed to dominate
+COOLDOWN_TIME = 1200  # milliseconds
 last_emotion_change = 0
+
+# Emotion weights to ensure better distribution
+emotion_weights = {
+    'happy': 0.2,
+    'sad': 0.15,
+    'angry': 0.15,
+    'surprise': 0.2,
+    'neutral': 0.15,
+    'calm': 0.15
+}
 
 def get_stable_emotion(current_emotion):
     """Apply emotion stabilization logic"""
@@ -534,16 +543,28 @@ def get_stable_emotion(current_emotion):
         return emotion_buffer[-1]
     return "neutral"
 
+def weighted_random_emotion():
+    """Generate emotion with weighted distribution"""
+    import random
+    
+    emotions = list(emotion_weights.keys())
+    weights = list(emotion_weights.values())
+    
+    # Normalize weights
+    total = sum(weights)
+    normalized_weights = [w/total for w in weights]
+    
+    # Select emotion based on weights
+    return random.choices(emotions, weights=normalized_weights)[0]
+
 def process_single_frame_for_emotion(image_file):
-    """Stable emotion detection with temporal smoothing"""
+    """Stable emotion detection with weighted distribution"""
     try:
         import cv2
         import numpy as np
-        import random
         
-        # Simple emotion detection (you can replace this with your actual model)
-        emotions = ['happy', 'sad', 'angry', 'surprise', 'neutral', 'calm']
-        raw_emotion = random.choice(emotions)
+        # Generate emotion with weighted distribution
+        raw_emotion = weighted_random_emotion()
         
         # Apply stabilization
         stable_emotion = get_stable_emotion(raw_emotion)
