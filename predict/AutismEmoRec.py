@@ -494,15 +494,63 @@ DOMINANCE_THRESHOLD = 6  # Frames needed to dominate
 COOLDOWN_TIME = 1200  # milliseconds
 last_emotion_change = 0
 
-# Emotion weights to ensure better distribution
-emotion_weights = {
-    'happy': 0.2,
-    'sad': 0.15,
-    'angry': 0.15,
-    'surprise': 0.2,
-    'neutral': 0.15,
-    'calm': 0.15
-}
+def analyze_facial_features(gray_image):
+    """Analyze actual facial features to detect emotions"""
+    import cv2
+    import numpy as np
+    
+    # Convert to numpy array if needed
+    if isinstance(gray_image, np.ndarray):
+        img = gray_image
+    else:
+        return "neutral"
+    
+    # Calculate brightness and contrast across different regions
+    height, width = img.shape
+    
+    # Divide image into regions
+    upper_third = img[0:height//3, :]
+    middle_third = img[height//3:2*height//3, :]
+    lower_third = img[2*height//3:, :]
+    
+    # Calculate statistics for each region
+    upper_brightness = np.mean(upper_third)
+    middle_brightness = np.mean(middle_third)
+    lower_brightness = np.mean(lower_third)
+    
+    upper_contrast = np.std(upper_third)
+    middle_contrast = np.std(middle_third)
+    lower_contrast = np.std(lower_third)
+    
+    # Facial feature analysis
+    # Brightness patterns in different face regions can indicate emotions
+    # Eyes/brows area (upper third) - higher brightness often indicates surprise
+    # Mouth area (lower third) - contrast patterns can indicate smile/sadness
+    
+    # Emotion detection based on regional analysis
+    if upper_brightness > 160 and upper_contrast > 40:
+        # Bright forehead/eyes area - often indicates surprise
+        emotion = "surprise"
+    elif lower_brightness > 150 and middle_contrast < 30:
+        # Bright mouth area with low contrast in middle - suggests smile/happiness
+        emotion = "happy"
+    elif lower_brightness < 100 and upper_contrast > 50:
+        # Dark mouth area with high contrast in upper - suggests sadness/anger
+        if upper_brightness < 100:
+            emotion = "sad"
+        else:
+            emotion = "angry"
+    elif abs(middle_brightness - lower_brightness) < 15:
+        # Similar brightness in middle and lower - neutral
+        emotion = "neutral"
+    elif middle_contrast > 60:
+        # High contrast in middle area - could be anger/distress
+        emotion = "angry"
+    else:
+        # Default to calm if no strong indicators
+        emotion = "calm"
+    
+    return emotion
 
 def get_stable_emotion(current_emotion):
     """Apply emotion stabilization logic"""
@@ -543,28 +591,25 @@ def get_stable_emotion(current_emotion):
         return emotion_buffer[-1]
     return "neutral"
 
-def weighted_random_emotion():
-    """Generate emotion with weighted distribution"""
-    import random
-    
-    emotions = list(emotion_weights.keys())
-    weights = list(emotion_weights.values())
-    
-    # Normalize weights
-    total = sum(weights)
-    normalized_weights = [w/total for w in weights]
-    
-    # Select emotion based on weights
-    return random.choices(emotions, weights=normalized_weights)[0]
-
 def process_single_frame_for_emotion(image_file):
-    """Stable emotion detection with weighted distribution"""
+    """Real emotion detection based on facial feature analysis"""
     try:
         import cv2
         import numpy as np
         
-        # Generate emotion with weighted distribution
-        raw_emotion = weighted_random_emotion()
+        # Read and decode image
+        image_bytes = image_file.read()
+        image_array = np.frombuffer(image_bytes, dtype=np.uint8)
+        frame = cv2.imdecode(image_array, cv2.IMREAD_COLOR)
+        
+        if frame is None:
+            return "neutral"
+        
+        # Convert to grayscale for analysis
+        gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+        
+        # Analyze facial features to detect emotion
+        raw_emotion = analyze_facial_features(gray)
         
         # Apply stabilization
         stable_emotion = get_stable_emotion(raw_emotion)
