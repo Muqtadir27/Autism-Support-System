@@ -276,19 +276,6 @@ git commit -m "feat: Add amazing feature with detailed description"
 # 5. Push and create pull request
 git push origin feature/your-amazing-feature
 ```
-
-### Code Standards
-- **PEP 8**: Follow Python style guidelines
-- **Documentation**: Include docstrings for all functions
-- **Testing**: Add unit tests for new features
-- **Performance**: Optimize ML pipeline efficiency
-
-### Areas for Contribution
-- 🎨 **UI/UX Enhancement**: Improve accessibility features
-- 🧠 **ML Model Improvement**: Boost emotion detection accuracy
-- 📱 **Mobile Optimization**: Responsive design enhancements
-- 🔐 **Security**: Additional privacy protection measures
-
 ---
 
 ## 📄 License & Attribution
