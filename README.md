@@ -1,5 +1,5 @@
 <div align="center">
-# 🧠 Autism Support System
+### 🧠 Autism Support System
 </div>
 
 <div align="center">
