@@ -145,6 +145,11 @@
                 <button id="stopCameraBtn" class="camera-btn stop" style="display: none;">STOP CAMERA</button>
             </div>
             
+            <!-- Hidden form for CSRF token -->
+            <form id="emissionForm" style="display: none;">
+                {% csrf_token %}
+            </form>
+            
             <div id="processingIndicator" class="processing-indicator">
                 Processing emotions...
             </div>
@@ -289,7 +294,13 @@
             formData.append('image', blob, 'frame.jpg');
             
             try {
-                const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+                // Get CSRF token from hidden form
+                const csrfForm = document.getElementById('emissionForm');
+                const csrfToken = csrfForm.querySelector('[name=csrfmiddlewaretoken]')?.value || 
+                                 document.querySelector('[name=csrfmiddlewaretoken]')?.value;
+                
+                console.log('CSRF Token available:', !!csrfToken);
+                console.log('Sending to:', '{% url "process_camera_frame" %}');
                 
                 const response = await fetch('{% url "process_camera_frame" %}', {
                     method: 'POST',
@@ -306,10 +317,15 @@
                     const confidence = (0.65 + Math.random() * 0.35).toFixed(2); // 0.65-1.00 range
                     emotionDisplay.textContent = `Emotion: ${emotion} (${confidence})`;
                     drawEmotionOverlay(emotion);
+                } else {
+                    console.error('Server returned status:', response.status);
+                    const errorText = await response.text();
+                    console.error('Response:', errorText);
+                    emotionDisplay.textContent = 'Error: Server error';
                 }
             } catch (error) {
-                console.log('Error in detection');
-                emotionDisplay.textContent = 'Emotion: neutral (0.75)';
+                console.error('Full error:', error);
+                emotionDisplay.textContent = 'Error: ' + error.message;
                 drawEmotionOverlay('neutral');
             }
         }, 'image/jpeg', 0.8);

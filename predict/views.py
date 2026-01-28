@@ -97,43 +97,44 @@ def download_emotion_log(request):
         raise Http404("Log file not found")
 
 def process_camera_frame(request):
-    print(f"Received request to process camera frame")
+    print(f"\n{'='*80}")
+    print("CAMERA FRAME PROCESSING REQUEST RECEIVED")
+    print(f"{'='*80}")
     print(f"Request method: {request.method}")
-    print(f"Request files keys: {list(request.FILES.keys())}")
-    print(f"Request META keys: {list(request.META.keys())}")
+    print(f"Request path: {request.path}")
+    print(f"Files received: {list(request.FILES.keys())}")
+    print(f"Post data: {list(request.POST.keys())}")
     
     if request.method == 'POST':
         try:
             # Get the uploaded image
             image_file = request.FILES.get('image')
             if not image_file:
-                print("No image file received")
+                print("ERROR: No image file received")
                 print(f"Available files: {list(request.FILES.keys())}")
-                # Return a simple fallback response
-                return JsonResponse({'success': True, 'emotion': 'No face detected'})
+                return JsonResponse({'success': True, 'emotion': 'No image'})
             
-            print(f"Received image file: {image_file.name}, size: {image_file.size} bytes")
+            print(f"[OK] Received image: {image_file.name}, size: {image_file.size} bytes")
             
             # Process the image to detect emotion
-            # Import the function here to avoid startup issues
             from .AutismEmoRec import process_single_frame_for_emotion
             
-            print("Calling process_single_frame_for_emotion function...")
-            # Call the emotion detection function
+            print("[CALLING] process_single_frame_for_emotion function...")
             emotion = process_single_frame_for_emotion(image_file)
-            print(f"Detected emotion: {emotion}")
+            print(f"[RESULT] Detected emotion: {emotion}")
             
-            # Handle potential None return
             if emotion is None:
                 emotion = 'No face detected'
             
-            return JsonResponse({'success': True, 'emotion': emotion})
+            response_data = {'success': True, 'emotion': emotion}
+            print(f"[SENDING] Response: {response_data}")
+            return JsonResponse(response_data)
+            
         except Exception as e:
-            print(f"Error processing camera frame: {e}")
+            print(f"[ERROR] Exception occurred: {e}")
             import traceback
             traceback.print_exc()
-            # Return a fallback response instead of an error
-            return JsonResponse({'success': True, 'emotion': 'Processing error'})
+            return JsonResponse({'success': False, 'emotion': 'Error', 'error': str(e)})
     else:
-        print("Received non-POST request")
+        print(f"Non-POST request received")
         return JsonResponse({'success': True, 'emotion': 'Ready for detection'})
