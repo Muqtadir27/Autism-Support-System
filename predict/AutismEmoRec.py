@@ -757,10 +757,12 @@ def get_stable_emotion(current_emotion):
     return "neutral"
 
 def process_single_frame_for_emotion(image_file):
-    """Working emotion detection that changes based on facial features"""
+    """Real emotion detection using pre-trained neural network model"""
     try:
         import cv2
         import numpy as np
+        from tensorflow.keras.models import load_model  # type: ignore
+        from tensorflow.keras.preprocessing.image import img_to_array  # type: ignore
         
         # Read and decode image
         image_bytes = image_file.read()
@@ -770,57 +772,77 @@ def process_single_frame_for_emotion(image_file):
         if frame is None:
             return "neutral"
         
-        # Convert to grayscale
-        gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+        # Initialize face detector and emotion model
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        prototxt_path = os.path.join(current_dir, "Autismfiles", "deploy.prototxt.txt")
+        caffemodel_path = os.path.join(current_dir, "Autismfiles", "res10_300x300_ssd_iter_140000.caffemodel")
+        emotion_model_path = os.path.join(current_dir, "Autismfiles", "fer2013_mini_XCEPTION.102-0.66.hdf5")
         
-        # Calculate basic facial features that change with expressions
-        height, width = gray.shape
+        # Load face detection model
+        net = cv2.dnn.readNetFromCaffe(prototxt_path, caffemodel_path)
         
-        # Divide face into regions
-        top_region = gray[0:height//3, :]
-        middle_region = gray[height//3:2*height//3, :]
-        bottom_region = gray[2*height//3:, :]
+        # Load emotion recognition model
+        emotion_net = load_model(emotion_model_path, compile=False)
         
-        # Calculate features that change with facial expressions
-        top_mean = np.mean(top_region)
-        middle_mean = np.mean(middle_region)
-        bottom_mean = np.mean(bottom_region)
+        # Prepare frame for face detection
+        h, w = frame.shape[:2]
+        blob = cv2.dnn.blobFromImage(frame, 1.0, (300, 300), [104, 117, 123], False, False)
         
-        top_std = np.std(top_region)
-        middle_std = np.std(middle_region)
-        bottom_std = np.std(bottom_region)
+        # Detect faces
+        net.setInput(blob)
+        detections = net.forward()
         
-        # Simple but effective emotion detection based on real facial changes
-        # These metrics change significantly with different expressions
+        emotion_labels = ['angry', 'disgust', 'fear', 'happy', 'sad', 'surprise', 'neutral']
+        detected_emotions = []
         
-        # If bottom region (mouth area) is brighter than top (eyebrows), likely smiling
-        if bottom_mean > top_mean + 15 and middle_std < 40:
-            return "happy"
-        
-        # If bottom region is darker and top has high contrast, likely sad
-        elif bottom_mean < top_mean - 10 and top_std > 45:
-            return "sad"
+        # Process each detected face
+        for i in range(detections.shape[2]):
+            confidence = detections[0, 0, i, 2]
             
-        # If middle region has very high contrast, likely angry
-        elif middle_std > 55:
-            return "angry"
-            
-        # If top region is very bright (wide eyes), likely surprised
-        elif top_mean > 150 and top_std > 50:
-            return "surprise"
-            
-        # If overall contrast is high, likely fearful
-        elif np.std(gray) > 60:
-            return "fear"
-            
-        # If middle region is brighter than others, could be disgust
-        elif middle_mean > top_mean + 10 and middle_mean > bottom_mean + 10:
-            return "disgust"
-            
-        # Default to neutral if no strong indicators
+            # Only process detections with confidence > 0.5
+            if confidence > 0.5:
+                box = detections[0, 0, i, 3:7] * np.array([w, h, w, h])
+                x1, y1, x2, y2 = box.astype("int")
+                
+                # Ensure coordinates are within frame bounds
+                x1, y1 = max(0, x1), max(0, y1)
+                x2, y2 = min(w, x2), min(h, y2)
+                
+                # Extract face region
+                face_roi = frame[y1:y2, x1:x2]
+                
+                if face_roi.size == 0:
+                    continue
+                
+                # Preprocess for emotion model
+                face_roi = cv2.cvtColor(face_roi, cv2.COLOR_BGR2GRAY)
+                face_roi = cv2.resize(face_roi, (64, 64))
+                face_roi = face_roi.astype('float32') / 255.0
+                face_roi = img_to_array(face_roi)
+                face_roi = np.expand_dims(face_roi, axis=0)
+                
+                # Predict emotion
+                emotion_prediction = emotion_net.predict(face_roi, verbose=0)
+                emotion_idx = np.argmax(emotion_prediction[0])
+                emotion = emotion_labels[emotion_idx]
+                emotion_confidence = emotion_prediction[0][emotion_idx]
+                
+                detected_emotions.append({
+                    'emotion': emotion,
+                    'confidence': emotion_confidence
+                })
+        
+        # Return the emotion with highest confidence
+        if detected_emotions:
+            best_emotion = max(detected_emotions, key=lambda x: x['confidence'])
+            log_single_emotion(best_emotion['emotion'])
+            return best_emotion['emotion']
         else:
+            # No face detected
             return "neutral"
         
     except Exception as e:
-        print(f"Error: {e}")
+        print(f"Error in emotion detection: {e}")
+        import traceback
+        traceback.print_exc()
         return "neutral"
