@@ -1,7 +1,4 @@
-<div align="center">
-### 🧠 Autism Support System
-</div>
-
+<h1 align="center">🧠 Autism Support System</h1>
 <div align="center">
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
