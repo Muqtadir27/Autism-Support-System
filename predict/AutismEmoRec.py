@@ -760,7 +760,7 @@ def get_stable_emotion(current_emotion):
 _emotion_models_cache = None
 
 def get_emotion_models():
-    """Load and cache emotion detection models"""
+    """Load and cache emotion detection models - production safe"""
     global _emotion_models_cache
     
     if _emotion_models_cache is not None:
@@ -776,18 +776,37 @@ def get_emotion_models():
         caffemodel_path = os.path.join(current_dir, "Autismfiles", "res10_300x300_ssd_iter_140000.caffemodel")
         emotion_model_path = os.path.join(current_dir, "Autismfiles", "fer2013_mini_XCEPTION.102-0.66.hdf5")
         
-        # Verify files exist
+        print(f"[INIT] Model directory: {current_dir}/Autismfiles")
+        
+        # Verify files exist - critical for production
+        missing_files = []
         for path, name in [(prototxt_path, "Prototxt"), (caffemodel_path, "CaffeModel"), (emotion_model_path, "Emotion Model")]:
             if not os.path.exists(path):
-                raise FileNotFoundError(f"{name} not found at {path}")
+                missing_files.append(f"{name} at {path}")
+                print(f"[INIT] WARNING: {name} not found at {path}")
+            else:
+                size_mb = os.path.getsize(path) / (1024 * 1024)
+                print(f"[INIT] [OK] {name}: {size_mb:.1f} MB")
+        
+        if missing_files:
+            print(f"[INIT] Missing files: {missing_files}")
+            # Don't fail, try to use what we have
         
         # Load face detector
-        face_net = cv2.dnn.readNetFromCaffe(prototxt_path, caffemodel_path)
-        print("[INIT] [OK] Face detection model loaded")
+        try:
+            face_net = cv2.dnn.readNetFromCaffe(prototxt_path, caffemodel_path)
+            print("[INIT] [OK] Face detection model (Caffe) loaded")
+        except Exception as e:
+            print(f"[INIT] [WARN] Could not load Caffe model: {e}")
+            face_net = None
         
         # Load emotion model
-        emotion_net = load_model(emotion_model_path, compile=False)
-        print(f"[INIT] [OK] Emotion model loaded - Input: {emotion_net.input_shape}, Output: {emotion_net.output_shape}")
+        try:
+            emotion_net = load_model(emotion_model_path, compile=False)
+            print(f"[INIT] [OK] Emotion model loaded - Input: {emotion_net.input_shape}, Output: {emotion_net.output_shape}")
+        except Exception as e:
+            print(f"[INIT] [FAIL] Could not load emotion model: {e}")
+            raise
         
         _emotion_models_cache = {
             'face_net': face_net,
@@ -797,13 +816,18 @@ def get_emotion_models():
         return _emotion_models_cache
     
     except Exception as e:
-        print(f"[INIT] [FAILED] FAILED TO LOAD MODELS: {e}")
+        print(f"[INIT] [FAIL] FAILED TO LOAD MODELS: {e}")
         import traceback
         traceback.print_exc()
         raise
 
 def process_single_frame_for_emotion(image_file):
-    """Real emotion detection using DeepFace (most reliable) with fallback to local models"""
+    """
+    Emotion detection with multiple fallback strategies:
+    1. DeepFace (if available and working)
+    2. Local TensorFlow model with face detection
+    3. Haar Cascade + TensorFlow (fallback)
+    """
     print("\n" + "="*80)
     print("EMOTION DETECTION REQUEST")
     print("="*80)
@@ -828,106 +852,112 @@ def process_single_frame_for_emotion(image_file):
         
         print(f"[3] Frame decoded: {frame.shape}")
         
-        # TRY METHOD 1: DeepFace (most reliable)
+        # STRATEGY 1: Try DeepFace (works best, but requires downloads)
+        print("[4a] Attempting DeepFace analysis...")
         try:
-            print("[4a] Attempting DeepFace analysis (most reliable)...")
             from deepface import DeepFace
+            import os
             
-            result = DeepFace.analyze(frame, actions=['emotion'], enforce_detection=False, silent=True)
+            # Set timeout and cache directory for production
+            os.environ['DEEPFACE_HOME'] = '/tmp/deepface'  # Use temp dir in production
+            
+            result = DeepFace.analyze(
+                frame, 
+                actions=['emotion'], 
+                enforce_detection=False, 
+                silent=True,
+                detector_backend='opencv'  # Use lightweight OpenCV detector
+            )
+            
             if result and len(result) > 0:
                 dominant_emotion = result[0]['dominant_emotion']
-                print(f"[4a] DeepFace detected: {dominant_emotion}")
-                print(f"[4a] All emotions: {result[0]['emotion']}")
+                print(f"[SUCCESS] DeepFace detected: {dominant_emotion}")
                 log_single_emotion(dominant_emotion)
                 print("="*80 + "\n")
                 return dominant_emotion
             else:
-                print("[4a] DeepFace returned no results")
-        except ImportError:
-            print("[4a] DeepFace not available, trying local models...")
-        except Exception as e:
-            print(f"[4a] DeepFace error: {e}")
+                print("[FALLBACK] DeepFace returned no results, trying local model...")
         
-        # METHOD 2: Local TensorFlow model with dual face detection
-        print("[4b] Using local TensorFlow model...")
+        except ImportError as e:
+            print(f"[FALLBACK] DeepFace not installed: {e}")
+        except Exception as e:
+            print(f"[FALLBACK] DeepFace error (timeout/network/memory): {e}")
+        
+        # STRATEGY 2: Use lightweight Haar Cascade + TensorFlow model
+        print("[4b] Using Haar Cascade + TensorFlow (lightweight fallback)...")
         from tensorflow.keras.preprocessing.image import img_to_array  # type: ignore
         
         models = get_emotion_models()
-        face_net = models['face_net']
         emotion_net = models['emotion_net']
-        print("[4b] Models loaded from cache")
-        
-        h, w = frame.shape[:2]
         emotion_labels = ['angry', 'disgust', 'fear', 'happy', 'sad', 'surprise', 'neutral']
-        best_emotion = None
         
-        # METHOD 2A: Try Caffe face detector
-        print("[5a] Detecting faces (Caffe CNN)...")
-        blob = cv2.dnn.blobFromImage(frame, 1.0, (300, 300), [104, 117, 123], False, False)
-        face_net.setInput(blob)
-        detections = face_net.forward()
-        print(f"[5a] Caffe detection shape: {detections.shape}")
-        
-        # Process Caffe detections
-        for i in range(min(detections.shape[2], 20)):
-            confidence = detections[0, 0, i, 2]
-            
-            if confidence > 0.25:
-                box = detections[0, 0, i, 3:7] * np.array([w, h, w, h])
-                x1, y1, x2, y2 = box.astype("int")
-                x1, y1 = max(0, x1), max(0, y1)
-                x2, y2 = min(w, x2), min(h, y2)
-                
-                if x2 - x1 < 20 or y2 - y1 < 20:
-                    continue
-                
-                face = frame[y1:y2, x1:x2]
-                emotion = _predict_emotion_from_face(face, emotion_net, emotion_labels)
-                print(f"[6a] Caffe face detected: {emotion}")
-                
-                if emotion and emotion != "neutral":
-                    best_emotion = emotion
-                    break
-        
-        if best_emotion:
-            print(f"\n[RESULT] {best_emotion} (Caffe detection)")
-            log_single_emotion(best_emotion)
-            print("="*80 + "\n")
-            return best_emotion
-        
-        # METHOD 2B: Haar Cascade fallback
-        print("[5b] Detecting faces (Haar Cascade)...")
+        # Use Haar Cascade - fast, no downloads needed
+        print("[5] Detecting faces with Haar Cascade...")
         gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
         face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
-        faces = face_cascade.detectMultiScale(gray, 1.1, 4, minSize=(30, 30))
+        faces = face_cascade.detectMultiScale(gray, 1.1, 4, minSize=(40, 40))
         
-        print(f"[5b] Haar Cascade found {len(faces)} faces")
+        print(f"[6] Haar Cascade found {len(faces)} faces")
         
         if len(faces) > 0:
-            for (x, y, w_face, h_face) in faces:
-                face = frame[y:y+h_face, x:x+w_face]
-                emotion = _predict_emotion_from_face(face, emotion_net, emotion_labels)
-                print(f"[6b] Haar face detected: {emotion}")
-                
-                if emotion:
-                    log_single_emotion(emotion)
-                    print(f"\n[RESULT] {emotion} (Haar Cascade detection)")
-                    print("="*80 + "\n")
-                    return emotion
+            # Process largest face
+            largest_face = max(faces, key=lambda f: f[2] * f[3])
+            (x, y, w_face, h_face) = largest_face
+            
+            face = frame[y:y+h_face, x:x+w_face]
+            emotion = _predict_emotion_from_face(face, emotion_net, emotion_labels)
+            
+            if emotion:
+                print(f"[SUCCESS] Haar Cascade + TensorFlow detected: {emotion}")
+                log_single_emotion(emotion)
+                print("="*80 + "\n")
+                return emotion
         
-        print(f"\n[RESULT] neutral (no face detected)")
+        # STRATEGY 3: Try Caffe face detector if Haar Cascade failed
+        print("[7] Haar Cascade found no faces, trying Caffe CNN...")
+        try:
+            face_net = models['face_net']
+            h, w = frame.shape[:2]
+            blob = cv2.dnn.blobFromImage(frame, 1.0, (300, 300), [104, 117, 123], False, False)
+            face_net.setInput(blob)
+            detections = face_net.forward()
+            
+            for i in range(min(detections.shape[2], 5)):
+                confidence = detections[0, 0, i, 2]
+                
+                if confidence > 0.25:
+                    box = detections[0, 0, i, 3:7] * np.array([w, h, w, h])
+                    x1, y1, x2, y2 = box.astype("int")
+                    x1, y1 = max(0, x1), max(0, y1)
+                    x2, y2 = min(w, x2), min(h, y2)
+                    
+                    if x2 - x1 < 20 or y2 - y1 < 20:
+                        continue
+                    
+                    face = frame[y1:y2, x1:x2]
+                    emotion = _predict_emotion_from_face(face, emotion_net, emotion_labels)
+                    
+                    if emotion and emotion != "neutral":
+                        print(f"[SUCCESS] Caffe CNN + TensorFlow detected: {emotion}")
+                        log_single_emotion(emotion)
+                        print("="*80 + "\n")
+                        return emotion
+        except Exception as e:
+            print(f"[FALLBACK] Caffe CNN failed: {e}")
+        
+        print(f"[NEUTRAL] No face detected with sufficient confidence")
         print("="*80 + "\n")
         return "neutral"
         
     except Exception as e:
-        print(f"\n[ERROR] Exception: {e}")
+        print(f"\n[ERROR] Unexpected exception: {e}")
         import traceback
         traceback.print_exc()
         print("="*80 + "\n")
         return "neutral"
 
 def _predict_emotion_from_face(face, emotion_net, emotion_labels):
-    """Helper function to predict emotion from a face region"""
+    """Helper function to predict emotion from a face region - production safe"""
     try:
         import cv2
         import numpy as np
@@ -937,29 +967,40 @@ def _predict_emotion_from_face(face, emotion_net, emotion_labels):
             return None
         
         # Preprocess
-        face_gray = cv2.cvtColor(face, cv2.COLOR_BGR2GRAY)
+        try:
+            face_gray = cv2.cvtColor(face, cv2.COLOR_BGR2GRAY)
+        except:
+            face_gray = face  # Already grayscale
+        
+        # Resize and normalize
         face_resized = cv2.resize(face_gray, (64, 64))
         face_normalized = face_resized.astype('float32') / 255.0
         face_input = img_to_array(face_normalized)
         face_batch = np.expand_dims(face_input, axis=0)
         
-        print(f"  [PRED] Input shape: {face_batch.shape}, min={face_normalized.min():.3f}, max={face_normalized.max():.3f}, mean={face_normalized.mean():.3f}")
+        # Predict with error handling
+        try:
+            pred = emotion_net.predict(face_batch, verbose=0)
+        except Exception as e:
+            print(f"  [PRED ERROR] Prediction failed: {e}")
+            return None
         
-        # Predict
-        pred = emotion_net.predict(face_batch, verbose=0)
-        print(f"  [PRED] Raw predictions: {pred[0]}")
-        print(f"  [PRED] Prediction sum: {pred[0].sum():.4f}")
-        print(f"  [PRED] Min: {pred[0].min():.4f}, Max: {pred[0].max():.4f}")
+        # Validate output
+        if pred is None or len(pred) == 0:
+            return None
         
         emotion_idx = np.argmax(pred[0])
         emotion = emotion_labels[emotion_idx]
         emotion_score = pred[0][emotion_idx]
         
-        print(f"  [PRED] Selected: {emotion} (score={emotion_score:.4f})")
+        # Only return emotion if confidence is reasonable
+        if emotion_score < 0.3 and emotion == "neutral":
+            # Model is unsure, don't return neutral
+            return None
         
+        print(f"  [PRED] {emotion} (score={emotion_score:.4f})")
         return emotion
+        
     except Exception as e:
         print(f"  [PRED ERROR] {e}")
-        import traceback
-        traceback.print_exc()
         return None
