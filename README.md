@@ -5,6 +5,7 @@
 [![Python](https://img.shields.io/badge/Python-3.8%2B-blue.svg)](https://www.python.org/)
 [![Django](https://img.shields.io/badge/Django-4.2%2B-green.svg)](https://www.djangoproject.com/)
 [![TensorFlow](https://img.shields.io/badge/TensorFlow-2.15-orange.svg)](https://www.tensorflow.org/)
+[![Live Demo](https://img.shields.io/badge/Live-Demo-brightgreen)](https://autismsupport.up.railway.app)
 
 **AI-Powered Emotion Recognition & Support Platform for Autism Spectrum Individuals**
 
